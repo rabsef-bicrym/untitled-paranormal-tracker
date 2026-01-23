@@ -1,0 +1,16 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: paranormal-tracker-db
+    environment:
+      POSTGRES_USER: paranormal
+      POSTGRES_PASSWORD: paranormal
+      POSTGRES_DB: paranormal_tracker
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+
+volumes:
+  pgdata:
