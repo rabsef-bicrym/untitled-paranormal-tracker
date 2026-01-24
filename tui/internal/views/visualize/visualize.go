@@ -21,6 +21,14 @@ type PlottedPoint struct {
 	ScreenY int // Integer screen position (0 to height-1)
 }
 
+// ColorMode determines how points are colored
+type ColorMode int
+
+const (
+	ColorByStoryType ColorMode = iota
+	ColorByCluster
+)
+
 // Model represents the visualization view
 type Model struct {
 	database *db.DB
@@ -38,6 +46,7 @@ type Model struct {
 	offsetY    float64
 	selected   *db.UmapPoint
 	selectedID string
+	colorMode  ColorMode // Toggle between story_type and cluster coloring
 
 	// Pre-computed screen positions (single source of truth)
 	plottedPoints []PlottedPoint
@@ -209,6 +218,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					return StorySelectedMsg{StoryID: m.selected.ID}
 				}
 			}
+		case key.Matches(msg, key.NewBinding(key.WithKeys("c"))):
+			// Toggle color mode between story_type and cluster
+			if m.colorMode == ColorByStoryType {
+				m.colorMode = ColorByCluster
+			} else {
+				m.colorMode = ColorByStoryType
+			}
 		}
 	}
 
@@ -369,13 +385,21 @@ func (m Model) View() string {
 	combined := lipgloss.JoinHorizontal(lipgloss.Top, plot, "  ", info)
 
 	// Header
+	colorModeLabel := "by type"
+	if m.colorMode == ColorByCluster {
+		colorModeLabel = "by cluster"
+	}
 	header := styles.HeaderStyle.Width(m.width - 4).Render(
-		fmt.Sprintf("UMAP Visualization (%d stories)", len(m.points)),
+		fmt.Sprintf("UMAP Visualization (%d stories) [colored %s]", len(m.points), colorModeLabel),
 	)
 
 	// Footer
+	colorModeHint := "c: color by cluster"
+	if m.colorMode == ColorByCluster {
+		colorModeHint = "c: color by type"
+	}
 	footer := styles.DimStyle.Render(
-		"  ←↑↓→: move • +/-: zoom • r: reset • [/]: cycle overlap • enter: view",
+		fmt.Sprintf("  ←↑↓→: move • +/-: zoom • r: reset • [/]: cycle overlap • %s • enter: view", colorModeHint),
 	)
 
 	return lipgloss.JoinVertical(lipgloss.Left, header, "", combined, "", footer)
@@ -384,13 +408,13 @@ func (m Model) View() string {
 func (m Model) renderPlot(width, height int) string {
 	// Create empty grid
 	grid := make([][]rune, height)
-	colors := make([][]string, height)
+	pointRefs := make([][]*db.UmapPoint, height) // Store point refs for color lookup
 	for y := 0; y < height; y++ {
 		grid[y] = make([]rune, width)
-		colors[y] = make([]string, width)
+		pointRefs[y] = make([]*db.UmapPoint, width)
 		for x := 0; x < width; x++ {
 			grid[y][x] = ' '
-			colors[y][x] = ""
+			pointRefs[y][x] = nil
 		}
 	}
 
@@ -407,7 +431,7 @@ func (m Model) renderPlot(width, height int) string {
 			} else {
 				grid[y][x] = '◆' // Cluster (3+ points)
 			}
-			colors[y][x] = pp.Point.StoryType
+			pointRefs[y][x] = pp.Point
 		}
 	}
 
@@ -431,8 +455,14 @@ func (m Model) renderPlot(width, height int) string {
 					Foreground(lipgloss.Color("#FFFFFF")).
 					Background(lipgloss.Color("#FF6B6B")).
 					Render(ch))
-			} else if colors[y][x] != "" {
-				color := styles.GetTypeColor(colors[y][x])
+			} else if pointRefs[y][x] != nil {
+				// Color based on current mode
+				var color lipgloss.Color
+				if m.colorMode == ColorByCluster {
+					color = styles.GetClusterColor(pointRefs[y][x].ClusterID)
+				} else {
+					color = styles.GetTypeColor(pointRefs[y][x].StoryType)
+				}
 				b.WriteString(lipgloss.NewStyle().Foreground(color).Render(ch))
 			} else {
 				b.WriteString(ch)
@@ -452,22 +482,58 @@ func (m Model) renderPlot(width, height int) string {
 func (m Model) renderInfoPanel(width, height int) string {
 	var b strings.Builder
 
-	// Legend
-	b.WriteString(styles.BoldStyle.Render("Legend"))
-	b.WriteString("\n\n")
+	// Legend - different based on color mode
+	if m.colorMode == ColorByCluster {
+		b.WriteString(styles.BoldStyle.Render("Legend (Clusters)"))
+		b.WriteString("\n\n")
 
-	// Count stories by type
-	typeCounts := make(map[string]int)
-	for _, p := range m.points {
-		typeCounts[p.StoryType]++
-	}
+		// Count stories by cluster
+		clusterCounts := make(map[int]int)
+		noiseCount := 0
+		for _, p := range m.points {
+			if p.ClusterID != nil {
+				clusterCounts[*p.ClusterID]++
+			} else {
+				noiseCount++
+			}
+		}
 
-	for _, t := range db.StoryTypes {
-		count := typeCounts[t]
-		if count > 0 {
-			color := styles.GetTypeColor(t)
+		// Show clusters in order
+		clusterIDs := make([]int, 0, len(clusterCounts))
+		for id := range clusterCounts {
+			clusterIDs = append(clusterIDs, id)
+		}
+		sort.Ints(clusterIDs)
+
+		for _, id := range clusterIDs {
+			count := clusterCounts[id]
+			color := styles.GetClusterColor(&id)
 			marker := lipgloss.NewStyle().Foreground(color).Render("●")
-			b.WriteString(fmt.Sprintf("%s %-15s %3d\n", marker, t, count))
+			b.WriteString(fmt.Sprintf("%s cluster %-3d %3d\n", marker, id, count))
+		}
+
+		if noiseCount > 0 {
+			color := styles.GetClusterColor(nil)
+			marker := lipgloss.NewStyle().Foreground(color).Render("●")
+			b.WriteString(fmt.Sprintf("%s noise       %3d\n", marker, noiseCount))
+		}
+	} else {
+		b.WriteString(styles.BoldStyle.Render("Legend (Types)"))
+		b.WriteString("\n\n")
+
+		// Count stories by type
+		typeCounts := make(map[string]int)
+		for _, p := range m.points {
+			typeCounts[p.StoryType]++
+		}
+
+		for _, t := range db.StoryTypes {
+			count := typeCounts[t]
+			if count > 0 {
+				color := styles.GetTypeColor(t)
+				marker := lipgloss.NewStyle().Foreground(color).Render("●")
+				b.WriteString(fmt.Sprintf("%s %-15s %3d\n", marker, t, count))
+			}
 		}
 	}
 
@@ -502,6 +568,11 @@ func (m Model) renderInfoPanel(width, height int) string {
 		}
 		b.WriteString(fmt.Sprintf("%s\n", title))
 		b.WriteString(fmt.Sprintf("Type: %s\n", styles.TypeBadge(m.selected.StoryType)))
+		if m.selected.ClusterID != nil {
+			b.WriteString(fmt.Sprintf("Cluster: %s\n", styles.ClusterBadge(m.selected.ClusterID)))
+		} else {
+			b.WriteString("Cluster: noise/outlier\n")
+		}
 		b.WriteString("\n")
 		b.WriteString(styles.DimStyle.Render("Press Enter to view"))
 	} else {

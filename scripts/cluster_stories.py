@@ -42,6 +42,8 @@ except ImportError:
 
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 from sklearn.preprocessing import LabelEncoder
+from scipy.cluster.hierarchy import linkage
+from scipy.spatial.distance import pdist
 
 # Database connection
 DATABASE_URL = os.getenv(
@@ -434,6 +436,231 @@ def extract_cluster_themes(contents, discovered_labels):
                 print("Mixed/unclassified phenomenology")
 
 
+def analyze_hierarchy(coords_5d, cluster_labels, titles):
+    """
+    Analyze hierarchical relationships between clusters.
+
+    Shows which clusters are most similar to each other,
+    revealing potential meta-categories (e.g., "sleep-related phenomena").
+    """
+    print("\n" + "="*60)
+    print("HIERARCHICAL CLUSTER RELATIONSHIPS")
+    print("="*60)
+
+    # Get unique clusters (excluding noise)
+    unique_clusters = sorted(set(c for c in cluster_labels if c >= 0))
+
+    if len(unique_clusters) < 2:
+        print("Need at least 2 clusters for hierarchy analysis")
+        return
+
+    # Compute cluster centroids
+    centroids = []
+    cluster_names = []
+    for cluster_id in unique_clusters:
+        mask = cluster_labels == cluster_id
+        centroid = coords_5d[mask].mean(axis=0)
+        centroids.append(centroid)
+        cluster_names.append(f"Cluster {cluster_id}")
+
+    centroids = np.array(centroids)
+
+    # Compute hierarchical clustering on centroids
+    distances = pdist(centroids, metric='euclidean')
+    Z = linkage(distances, method='ward')
+
+    # Print merge order (text-based dendrogram)
+    print("\nCluster merge order (most similar → least similar):")
+    n = len(unique_clusters)
+    cluster_map = {i: cluster_names[i] for i in range(n)}
+
+    for i, (c1, c2, dist, _) in enumerate(Z):
+        c1, c2 = int(c1), int(c2)
+        name1 = cluster_map.get(c1, f"Group {c1-n+1}")
+        name2 = cluster_map.get(c2, f"Group {c2-n+1}")
+        new_name = f"({name1} + {name2})"
+        cluster_map[n + i] = new_name
+        print(f"  {dist:6.2f}: {name1} ↔ {name2}")
+
+
+def analyze_stability(embeddings, n_neighbors_range=[10, 15, 20, 25],
+                     min_cluster_sizes=[3, 5, 7]):
+    """
+    Test cluster stability across different parameters.
+
+    Robust clusters should form consistently regardless of parameter choices.
+    """
+    from sklearn.metrics import adjusted_rand_score
+
+    print("\n" + "="*60)
+    print("CLUSTER STABILITY ANALYSIS")
+    print("="*60)
+    print("Testing if clusters are robust to parameter changes...\n")
+
+    results = []
+
+    # Run with different parameter combinations
+    for n_neighbors in n_neighbors_range:
+        for min_cluster_size in min_cluster_sizes:
+            # UMAP
+            reducer = umap.UMAP(
+                n_neighbors=n_neighbors,
+                n_components=5,
+                min_dist=0.0,
+                metric='cosine',
+                random_state=42,
+                verbose=False
+            )
+            coords = reducer.fit_transform(embeddings)
+
+            # HDBSCAN
+            clusterer = hdbscan.HDBSCAN(
+                min_cluster_size=min_cluster_size,
+                min_samples=2,
+                metric='euclidean'
+            )
+            labels = clusterer.fit_predict(coords)
+
+            n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+            noise_pct = sum(1 for l in labels if l == -1) / len(labels)
+
+            results.append({
+                'n_neighbors': n_neighbors,
+                'min_cluster_size': min_cluster_size,
+                'labels': labels,
+                'n_clusters': n_clusters,
+                'noise_pct': noise_pct
+            })
+
+    # Compare all pairs of results
+    print("Parameter combinations tested:")
+    for r in results:
+        print(f"  n_neighbors={r['n_neighbors']:2}, min_cluster_size={r['min_cluster_size']}: "
+              f"{r['n_clusters']} clusters, {r['noise_pct']:.1%} noise")
+
+    # Find the most stable result (highest average ARI with others)
+    print("\nStability scores (average ARI with other parameter settings):")
+    stabilities = []
+    for i, r1 in enumerate(results):
+        aris = []
+        for j, r2 in enumerate(results):
+            if i != j:
+                ari = adjusted_rand_score(r1['labels'], r2['labels'])
+                aris.append(ari)
+        avg_ari = np.mean(aris)
+        stabilities.append((avg_ari, r1))
+        print(f"  n={r1['n_neighbors']:2}, mcs={r1['min_cluster_size']}: stability={avg_ari:.3f}")
+
+    # Recommend most stable
+    stabilities.sort(reverse=True)
+    best = stabilities[0][1]
+    print(f"\n→ Most stable parameters: n_neighbors={best['n_neighbors']}, "
+          f"min_cluster_size={best['min_cluster_size']}")
+
+    return best['labels']
+
+
+def analyze_soft_membership(clusterer, coords_5d, titles, threshold=0.3):
+    """
+    Analyze soft cluster membership probabilities.
+
+    Stories with low confidence may represent transitional experiences
+    or mixed phenomena - interesting edge cases.
+    """
+    print("\n" + "="*60)
+    print("SOFT CLUSTER MEMBERSHIP")
+    print("="*60)
+
+    # Get soft cluster assignments
+    soft_clusters = hdbscan.all_points_membership_vectors(clusterer)
+
+    print("\nStories with ambiguous cluster membership (max prob < 70%):")
+    print("These may represent transitional or mixed experiences.\n")
+
+    ambiguous = []
+    for i, probs in enumerate(soft_clusters):
+        max_prob = probs.max()
+        if max_prob < 0.7 and max_prob > 0:  # Not noise, but uncertain
+            top_2 = np.argsort(probs)[-2:][::-1]
+            ambiguous.append({
+                'title': titles[i],
+                'probs': probs,
+                'max_prob': max_prob,
+                'top_clusters': [(c, probs[c]) for c in top_2 if probs[c] > 0.1]
+            })
+
+    ambiguous.sort(key=lambda x: x['max_prob'])
+
+    for item in ambiguous[:10]:  # Show top 10 most ambiguous
+        title = item['title'][:45] + "..." if len(item['title']) > 45 else item['title']
+        clusters_str = ", ".join(f"C{c}:{p:.0%}" for c, p in item['top_clusters'])
+        print(f"  [{item['max_prob']:.0%}] {title}")
+        print(f"       → {clusters_str}")
+
+    if len(ambiguous) > 10:
+        print(f"  ... and {len(ambiguous) - 10} more ambiguous stories")
+
+    return soft_clusters
+
+
+def run_bertopic(contents, embeddings):
+    """
+    Run BERTopic to get interpretable topic labels for clusters.
+
+    BERTopic extracts representative words/phrases for each topic,
+    making clusters more interpretable.
+    """
+    try:
+        from bertopic import BERTopic
+    except ImportError:
+        print("\n[BERTopic not installed - skipping topic extraction]")
+        print("  Install with: pip install bertopic")
+        return None
+
+    print("\n" + "="*60)
+    print("BERTOPIC ANALYSIS")
+    print("="*60)
+    print("Extracting interpretable topic labels...\n")
+
+    # Configure BERTopic to use our pre-computed embeddings
+    topic_model = BERTopic(
+        embedding_model=None,  # We provide embeddings
+        umap_model=umap.UMAP(
+            n_neighbors=15,
+            n_components=5,
+            min_dist=0.0,
+            metric='cosine',
+            random_state=42
+        ),
+        hdbscan_model=hdbscan.HDBSCAN(
+            min_cluster_size=5,
+            min_samples=2,
+            metric='euclidean',
+            prediction_data=True
+        ),
+        verbose=False
+    )
+
+    topics, probs = topic_model.fit_transform(contents, embeddings=embeddings)
+
+    # Get topic info
+    topic_info = topic_model.get_topic_info()
+
+    print("Discovered topics with representative words:\n")
+    for _, row in topic_info.iterrows():
+        topic_id = row['Topic']
+        if topic_id == -1:
+            continue  # Skip outlier topic
+        count = row['Count']
+        # Get top words for this topic
+        topic_words = topic_model.get_topic(topic_id)
+        if topic_words:
+            words = [w for w, _ in topic_words[:6]]
+            print(f"  Topic {topic_id} ({count} stories): {', '.join(words)}")
+
+    return topic_model
+
+
 def update_database(ids, umap_coords_2d, cluster_labels):
     """Store UMAP coordinates and cluster IDs in the database."""
     conn = psycopg2.connect(DATABASE_URL)
@@ -496,7 +723,24 @@ def main():
                        help='Analyze without updating database')
     parser.add_argument('--viz-min-dist', type=float, default=0.1,
                        help='UMAP min_dist for 2D visualization (default: 0.1)')
+    parser.add_argument('--stability', action='store_true',
+                       help='Run cluster stability analysis across parameters')
+    parser.add_argument('--hierarchy', action='store_true',
+                       help='Show hierarchical relationships between clusters')
+    parser.add_argument('--soft', action='store_true',
+                       help='Show soft cluster membership (ambiguous stories)')
+    parser.add_argument('--bertopic', action='store_true',
+                       help='Run BERTopic for interpretable topic labels')
+    parser.add_argument('--all-analysis', action='store_true',
+                       help='Run all analysis types')
     args = parser.parse_args()
+
+    # --all-analysis enables all optional analyses
+    if args.all_analysis:
+        args.stability = True
+        args.hierarchy = True
+        args.soft = True
+        args.bertopic = True
 
     # Load embeddings
     print("Loading embeddings from database...")
@@ -536,7 +780,23 @@ def main():
     # Step 5: Extract themes
     extract_cluster_themes(contents, cluster_labels)
 
-    # Step 6: UMAP to 2D for visualization
+    # Step 6: Hierarchical analysis (optional)
+    if args.hierarchy:
+        analyze_hierarchy(coords_5d, cluster_labels, titles)
+
+    # Step 7: Soft membership analysis (optional)
+    if args.soft:
+        analyze_soft_membership(clusterer, coords_5d, titles)
+
+    # Step 8: Stability analysis (optional)
+    if args.stability:
+        analyze_stability(embeddings)
+
+    # Step 9: BERTopic analysis (optional)
+    if args.bertopic:
+        run_bertopic(contents, embeddings)
+
+    # Step 10: UMAP to 2D for visualization
     coords_2d = run_umap_viz(
         embeddings,
         n_neighbors=args.n_neighbors,
@@ -547,7 +807,7 @@ def main():
     print(f"  X: [{coords_2d[:, 0].min():.2f}, {coords_2d[:, 0].max():.2f}]")
     print(f"  Y: [{coords_2d[:, 1].min():.2f}, {coords_2d[:, 1].max():.2f}]")
 
-    # Step 7: Update database
+    # Step 11: Update database
     if not args.dry_run:
         update_database(ids, coords_2d, cluster_labels)
         print("\nDatabase updated! Run the TUI visualize view to see the scatter plot.")

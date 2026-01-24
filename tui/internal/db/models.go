@@ -64,6 +64,32 @@ var StoryTypeColors = map[string]string{
 	"other":           "#808080", // Gray
 }
 
+// ClusterColors provides distinct colors for discovered clusters
+// These are perceptually distinct colors for up to 12 clusters
+var ClusterColors = []string{
+	"#E6194B", // Red
+	"#3CB44B", // Green
+	"#FFE119", // Yellow
+	"#4363D8", // Blue
+	"#F58231", // Orange
+	"#911EB4", // Purple
+	"#42D4F4", // Cyan
+	"#F032E6", // Magenta
+	"#BFEF45", // Lime
+	"#FABED4", // Pink
+	"#469990", // Teal
+	"#9A6324", // Brown
+}
+
+// GetClusterColor returns a color for a cluster ID
+func GetClusterColor(clusterID *int) string {
+	if clusterID == nil {
+		return "#555555" // Gray for noise/outliers
+	}
+	idx := *clusterID % len(ClusterColors)
+	return ClusterColors[idx]
+}
+
 // FormattedDate returns the air date as a string
 func (s *Story) FormattedDate() string {
 	if !s.AirDate.Valid {
@@ -109,6 +135,7 @@ type UmapPoint struct {
 	ID        string
 	Title     string
 	StoryType string
+	ClusterID *int // Discovered cluster (nil = noise/outlier)
 	X         float64
 	Y         float64
 }

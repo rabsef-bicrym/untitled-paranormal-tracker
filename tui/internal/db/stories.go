@@ -176,7 +176,7 @@ func (db *DB) TextSearch(ctx context.Context, query string, limit int) ([]Story,
 // GetUmapPoints retrieves all stories with UMAP coordinates
 func (db *DB) GetUmapPoints(ctx context.Context) ([]UmapPoint, error) {
 	query := `
-		SELECT id, title, COALESCE(story_type, 'other'), umap_x, umap_y
+		SELECT id, title, COALESCE(story_type, 'other'), cluster_id, umap_x, umap_y
 		FROM stories
 		WHERE umap_x IS NOT NULL AND umap_y IS NOT NULL
 	`
@@ -190,7 +190,7 @@ func (db *DB) GetUmapPoints(ctx context.Context) ([]UmapPoint, error) {
 	var points []UmapPoint
 	for rows.Next() {
 		var p UmapPoint
-		err := rows.Scan(&p.ID, &p.Title, &p.StoryType, &p.X, &p.Y)
+		err := rows.Scan(&p.ID, &p.Title, &p.StoryType, &p.ClusterID, &p.X, &p.Y)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan point: %w", err)
 		}

@@ -1,6 +1,8 @@
 package styles
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -149,4 +151,43 @@ func TypeBadge(storyType string) string {
 		Background(color).
 		Padding(0, 1).
 		Render(storyType)
+}
+
+// ClusterColors provides distinct colors for discovered clusters
+var clusterColors = []lipgloss.Color{
+	lipgloss.Color("#E6194B"), // Red
+	lipgloss.Color("#3CB44B"), // Green
+	lipgloss.Color("#FFE119"), // Yellow
+	lipgloss.Color("#4363D8"), // Blue
+	lipgloss.Color("#F58231"), // Orange
+	lipgloss.Color("#911EB4"), // Purple
+	lipgloss.Color("#42D4F4"), // Cyan
+	lipgloss.Color("#F032E6"), // Magenta
+	lipgloss.Color("#BFEF45"), // Lime
+	lipgloss.Color("#FABED4"), // Pink
+	lipgloss.Color("#469990"), // Teal
+	lipgloss.Color("#9A6324"), // Brown
+}
+
+// GetClusterColor returns a color for a cluster ID
+func GetClusterColor(clusterID *int) lipgloss.Color {
+	if clusterID == nil {
+		return lipgloss.Color("#555555") // Gray for noise/outliers
+	}
+	idx := *clusterID % len(clusterColors)
+	return clusterColors[idx]
+}
+
+// ClusterBadge creates a colored badge for a cluster
+func ClusterBadge(clusterID *int) string {
+	color := GetClusterColor(clusterID)
+	label := "noise"
+	if clusterID != nil {
+		label = fmt.Sprintf("cluster %d", *clusterID)
+	}
+	return lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#000000")).
+		Background(color).
+		Padding(0, 1).
+		Render(label)
 }
