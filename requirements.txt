@@ -9,3 +9,9 @@ requests>=2.31.0
 
 # YAML parsing for frontmatter
 pyyaml>=6.0
+
+# Embedding analysis & clustering
+numpy>=1.24.0
+scikit-learn>=1.3.0
+umap-learn>=0.5.4
+hdbscan>=0.8.33
