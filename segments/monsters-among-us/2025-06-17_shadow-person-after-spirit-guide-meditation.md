@@ -1,0 +1,15 @@
+---
+title: "Shadow Person After Spirit Guide Meditation"
+show: "Monsters Among Us"
+date: 2025-06-17
+timestamp_start: 193.0
+timestamp_end: 384.2
+timestamp_display: "3:13 - 6:24"
+caller: "Megan from Detroit, Michigan"
+type: "shadow_person"
+location: "Detroit, Michigan"
+source_lines: "14-14"
+first_person: true
+---
+
+[Speaker A] Hi Monsters among us. My name is Megan and I'm calling from Detroit, Michigan, and I wanted to share a little bit about my paranormal experience. It was about 10 years ago and I was at my family's home with my parents and I'd recently gotten like really into the paranormal. And apart from watching things on TV and I know me and my friends sometimes would mess around with the Ouija board, I never really Understood kind of the dangers of potentially what could happen with using those paranormal tools. So I wanted to try to get a little bit deeper into it. I was learning about spirit guides and potentially communicating with spirits. So I had bought a book and it gave exercises on how to communicate with the spirit world. And I remember reading it right before bed and I was like, you know, trying to meditate and I was trying to connect with my spirit guide. And I just said, you know, I really want to try to connect with my spirit guide. And I kind of like said that as a meditation and prayer to myself. Closed the book and then went to bed, turned off the light. And then sometime during the night, I'm a pretty sound sleeper, but I woke up and you can imagine, you know, it's a pitch black room, but I opened my eyes to see what now I can only imagine to be a shadow person. So in the darkness of my room, I still see the outline of a person about 5ft tall. But what distinguished it from the night was it was darker than the dark of my room. And I was so startled and that even within the blink of my eye, me kind of gasping and screaming, like I let out an audible scream, it was gone. And I remember just being so freaked out, I went back to sleep. But just in the morning, like I couldn't believe what I had actually saw and that it actually occurred the previous night. So I was pretty freaked out. So I didn't use the book anymore. I really kind of distanced myself from using the Ouija. And then now on TV you see so much more about the paranormal clips and videos. And that's how I later learned that it was most likely a shadow person. I've never seen it again, but I think that that really opened my eyes to like the potential dangers of shadow people and me thinking, what did I potentially unleash into my parents home? So I definitely got rid of that book. No longer played around with the Ouija just because it was such a profound experience. So I just want to caution those out there who are potentially using anything like that or want to communicate with forces beyond them or spirits that sometimes it's just better to leave those aside just for your own safety. But it was definitely something that spooky that happened to me and I wanted to share it with the podcast. So thank you so much. Love the podcast and keep it spooky. Bye bye.

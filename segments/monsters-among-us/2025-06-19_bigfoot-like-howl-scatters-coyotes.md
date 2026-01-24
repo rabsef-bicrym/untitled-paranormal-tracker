@@ -1,0 +1,15 @@
+---
+title: "Bigfoot-Like Howl Scatters Coyotes"
+show: "Monsters Among Us"
+date: 2025-06-19
+timestamp_start: 1441.4
+timestamp_end: 1660.6
+timestamp_display: "24:01 - 27:40"
+caller: "Ann from Texas"
+type: "cryptid"
+location: "Dallas suburbs, Texas"
+source_lines: "15-15"
+first_person: true
+---
+
+[Speaker C] Hey, Derek. This is Ann in Texas on season 14, episode 19. Sheila talked about hearing a very strange, almost mechanical noise, kind of a whooping or wooing sound that I think she kind of alluded might be Bigfoot or something like that, something out in the woods. I heard a similar thing one time. I was out walking my dog. I live in a suburb. We have a little bit of a nature preserve and a creek that kind of runs through the neighborhood. The little pockets of, you know, some trees and things. But I was walking my dog one night, as I did every night, and there are coyotes back in there sometimes in those woods. And I started hearing the yipping and, you know, coyote noises. It got my dog's attention, got my attention, because they were pretty close or they sounded pretty close. And I'd never heard that many of them before going off at one time. I've even seen a couple in the neighborhood. But anyway, it sounded like there were, gosh, at least six or eight of them going off loudly. And it sounded like they were running not toward me, but away from me. So I didn't think too much about it, but I was on alert because I didn't want to come across them, certainly. And right after they stopped doing that, I heard a very strange sound. Sounded like it was off in the distance, but it was the same. Sort of a mechanical sound, but an organic sound at the same time. Like a. This is going to sound very strange. But in the old Godzilla films, to have that Godzilla, whenever he would make his sound, it almost kind of sounded mechanical. It was sort of like that, but more of the. Like a siren. It sounded like a siren, but a living being making a siren noise. It's very hard to explain. When I came home that night, I tried to explain it to my husband, and I just failed to do so. I've lived in this house for 20 years, walked my dog nightly for years, but never heard that sound. And it went on for about a minute, and it made the hair on the back of my neck stand up, and it made my dog stop in his tracks. And my dog was pretty fearless, but both of us just stopped. I think the thing that stood out the most about it was how uneasy it made me feel, sort of like deep in my bones, like a primal sort of a spear. So much so that we kind of wrapped up our walk early because it just was really jumpy after hearing that. But I thought it was weird coming on the end of the coyote yip and their behavior. And I've since heard on other Bigfoot podcasts that the coyotes sometimes do that before Bigfoot behavior. So I don't know. I'm in a suburb of Dallas. I don't know if there's a Bigfoot running around here or not. But it was a very strange noise that I've never forgotten. And Sheila's tall kind of made me think about that. So there it is. Thanks so much for everything you do. Bye bye.

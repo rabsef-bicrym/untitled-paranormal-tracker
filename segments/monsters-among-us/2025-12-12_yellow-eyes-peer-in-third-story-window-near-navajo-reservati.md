@@ -1,0 +1,15 @@
+---
+title: "Yellow Eyes Peer in Third Story Window Near Navajo Reservation"
+show: "Monsters Among Us"
+date: 2025-12-12
+timestamp_start: 1444.4
+timestamp_end: 1632.0
+timestamp_display: "24:04 - 27:11"
+caller: "Stephen from Arizona"
+type: "cryptid"
+location: "Northern Arizona"
+source_lines: "19-19"
+first_person: true
+---
+
+[Speaker E] Hey Derek, this is Stephen calling from Arizona. Just wanted to share something that happened, oh, I guess a couple weeks ago now. It's currently the middle of July. I live in Northern Arizona, not far from the Navajo reservation. Whether or not that comes into play here, I don't know. But it was the middle of the night and I had woken up. And during the summer, the room that I have, I have a balcony. So I usually leave that door open. And then the screen door closed to let in the cooler air. And I woke up and something just didn't feel right. I don't know, something told me to just close the door, Just, you know, shut it and, you know, maybe not use a blanket. But I shut the door. And I remember being very still and calm outside. It was silent, which was kind of weird because I live very close to Interstate 40. And I can hear, you know, cars coming and going, and it's pretty much going at all hours of the night. But it was just. It was dead silent. And I was just thinking, well, that's weird. I shut the door and I figured, well, I'll forget about this and go back to sleep. Just kind of laid in bed, kind of tossing and turning. Maybe 30 minutes went by and I went up to get a glass of water. Maybe just kind of calm my nerves a little. As I stood up again, I heard this really loud sort of whooshing sound. Not really a strong wind gust, just this really loud whoosh. And I looked out the window, didn't see anything, and thought, well, that was strange. Just didn't really think anything of it until I heard this. Sort of. The best way I can describe it is kind of like a slopping noise, I guess, like a dog would make, you know, if it sees something that it wants to eat and it kind of like licks its chops, you know. And I thought that was strange, but my roommate has a pretty big dog, so I just figured it was him, you know, outside the door or something. But anyway, I decided to walk into my bathroom to fill up a cup from the sink. And there's another window on the way to the bathroom. And as I walked past it, I noticed these two kind of neon yellow colored eyes just kind of peering in. And at first I thought it was just my mind playing tricks on me. You know, my nerves are all amped up. And so I just was like, yeah, don't worry about it. It wasn't there. So I go and I give him a drink of water, and I come back around and it was still there. It was rather unsettling. Not just because there was something peering into my window, but I also live on the third floor. So, yeah, I shut the curtains and just said a quick prayer and just kind of told it to get out. But that's my story. Thanks for everything you do with the show. Really appreciate it. Thanks Derek.

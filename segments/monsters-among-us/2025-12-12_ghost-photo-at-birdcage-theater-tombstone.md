@@ -1,0 +1,15 @@
+---
+title: "Ghost Photo at Birdcage Theater Tombstone"
+show: "Monsters Among Us"
+date: 2025-12-12
+timestamp_start: 2853.2
+timestamp_end: 3016.7
+timestamp_display: "47:33 - 50:16"
+caller: "Abby from Flagstaff"
+type: "ghost"
+location: "Tombstone, Arizona"
+source_lines: "41-41"
+first_person: true
+---
+
+[Speaker B] Hi, this is Abby from Flagstaff, Arizona. This was probably back in like 2008. I grew up in this spooky haunted house growing up, and we were super obsessed with the show called Tap and this like predated ghost Adventures. I think they had some overlap, but it was a really good show and they had an episode on Tombstone, Arizona, which is, you know, a really old ghost town Kind of pioneered the wild west here. So we were kind of inspired as a family to go visit this town and kind of get a feel. Because, you know, the show just was like really spooky. Anyway, so we go and if you don't know, Tombstone, there's this really old saloon building, I believe, or it's a theater building or whatever. It was definitely entertainment for sure. But it's this massive building and they turned it into a museum of sorts so that you could kind of get a feel of what life was like. And so we're walking into the lobby of this building and there's this kind of banister on the second floor with, you know, red velvet curtains in the back. And it was for, you know, the Aristocrats or whatever they're called, to kind of look down at us, which is kind of cool. So we go through the museum and it's like families going in one after another. Like you're taking the tour together, but not like as a group together. It's just kind of like you're walking behind a family, a family's walking behind you, whatever. So we're going in. There's this family behind us and, you know, we're all really excited. They also had two little kids and, you know, it was me and my little brother. So we're all just like ecstatic. Like, what if we see ghosts? Like, that would be so cool. This place is so spooky. Like, we're chatting. We get to the end of the tour and it has you exit back out of the lobby where the banister is, and me and my family are like so excited. We're going to go see the rest of the town. Like, that was the spooky. Blah, blah, blah. And the family behind us decides to take a picture with a digital camera. That's like when this was. And so they take the digital picture of themselves and all we hear behind us is a no way. And we turn around, we're like, what? Like, it was pretty loud. And they look at us and they're like, look. And we go to look at their picture. And sure, as in the banister above us, there was like an old timey woman ghost in the picture behind us. We were so jealous. We wanted that to be us so bad. We were just so excited to see a ghost. And the fact that it wasn't us that got the picture, we were so annoyed. But yeah, it was super cool to go see. And if you guys ever get a chance to hit up Tombstone, Arizona, please do. It's like totally awesome. Maybe you'll catch a ghost sighting. Pretty sick. So, thanks. Bye.

@@ -1,0 +1,15 @@
+---
+title: "Shadow Person Appears to Crying Child"
+show: "Monsters Among Us"
+date: 2026-01-15
+timestamp_start: 3688.9
+timestamp_end: 3883.8
+timestamp_display: "1:01:28 - 1:04:43"
+caller: "Nadia from Virginia"
+type: "shadow_person"
+location: "Northern Virginia"
+source_lines: "90-90"
+first_person: true
+---
+
+[Speaker C] Hello, my name is Nadia, and I'm calling from Northern Virginia. When I was younger, I guess I was about six or seven years old, my parents, they had some friends over. It was like a party atmosphere. We were all downstairs. I guess I was just getting a little rambunctious or getting on their nerves. So they told me it was time for me to go to bed and I didn't want to go to sleep. I wanted to stay down with all of the adults and, you know, be nosy and be a kid. But they said, no, it's time for bed. So they sent me upstairs and I started throwing a little tantrum. I was crying and didn't want to go to sleep. So they told me, stay in my room. So I went in my room and I was in there crying, crying, crying. While I was crying, I noticed, like, in the corner of my room, there's this chair. And I looked at the chair and there was just this black, dark figure. And it was like staticky, like the static kind of you would see on a television. It was just growing and getting bigger and coming up over this chair. And because I was crying and had tears in my eyes, I thought, oh, maybe I'm just seeing things. So I went and rubbed my eyes clear and rubbed them really good and blinked and then looked again and it was coming over the chair. Like now it was over the chair and crawling up toward me on the bed, like, toward the bed. It just kept getting bigger and moving forward and I just couldn't believe it. I freaked out. So I just got under my covers and I looked one more time and it was still moving toward me, this big figure, like all dark, black, staticky, moving. And so I just pulled the covers up and stopped crying and just stayed under my covers all night. I didn't move or Wake up. Until the next morning, my mom had to come in and wake me up and I was like drenched because I just stayed in that position. I don't know if I told my mom or not, but in my head I thought that that was a sandman because, you know, I'd always heard the saying, if you don't go to sleep, the sandman is going to come and get you. You know, put sand in your eyes and make you go to sleep if you don't go to bed. And I never saw it again. But now that I've been listening to this podcast and I hear about the shadow people, I'm thinking I probably saw a shadow person, but I didn't have anything to compare it to. And you know, I don't think I imagined it because like I said, I cleared my eyes, like, because at first I was like, hold on, you know when you're crying and you see everything blurry? I was like, let me clear. So I rubbed my eyes really good and blinked and everything and it was still there. And then I looked for another time, like, peeked again through my cover, still there. So, yeah, I think I saw a shadow person. But that's my story. So. Thank you.

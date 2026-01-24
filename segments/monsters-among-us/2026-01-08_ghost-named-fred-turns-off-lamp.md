@@ -1,0 +1,19 @@
+---
+title: "Ghost Named Fred Turns Off Lamp"
+show: "Monsters Among Us"
+date: 2026-01-08
+timestamp_start: 2714.8
+timestamp_end: 2934.8
+timestamp_display: "45:14 - 48:54"
+caller: "Abby from Arizona"
+type: "haunting"
+location: "Phoenix, Arizona"
+source_lines: "64-66"
+first_person: true
+---
+
+[Speaker C] Hi Derek. My name is Abby from Flagstaff, Arizona. The first story that I'd like to share is actually from when I was younger. I was about 7 or 8 and me and my family lived in Phoenix, Arizona in a pretty decent home. But this home was haunted. And there were a lot of different things that would happen in this house. Like my father would hear voices, but there would be no tv. We would be asleep or not home. My father would also be trying to fall asleep and he would feel somebody sit on the bed thinking that it was my stepmother. But she would be working at night, so it obviously wasn't her. One time we walked into the home and all of the cabinets were open and the drawers were open. It became such a thing in our house that we started Calling the ghost Fred. And Fred was super harmless. Nothing malicious about the energy of the house. Like, you would walk in and it was a normal house and you could feel an energy, but it wasn't bad, nor was it necessarily comfortable. But a couple of specific experiences I wanted to talk about. So the first one, this was back in like 2007 or 2008, when Taps was still a show on TV. And this is the show that predated Ghost Adventures. And it was super awesome. But I was sitting on the couch with my father one evening. He is a musician, so he was playing his guitar. And we had just gotten done watching an episode of Taps on Tombstone, Arizona. And I'm sure you have lots of stories about Tombstone, but me being a kid, I was talking about how much I don't believe in ghosts and how ridiculous of a notion it is that things exist like that and that they would have any power over us as beings. And, you know, in a silly way, I was just saying it was dumb, basically. And my dad's sitting there, he's smiling at me, and he looks at me, you know, kind of quirky, and says, well, you know, ghosts come after the ones that don't believe. And no sooner does he get done saying that than the lamp in our living room, the only source of light, shuts off. And so for a second, I was stunned. You know, I'm seven and I'm just saying how stupid ghosts are. And all of a sudden the light turns off. And the way that this lamp was at first, we were like, oh, we got unplugged somehow. And we were used to Fred. So we were like, you know, whatever, we'll go plug it back in. And my dad's like, well, it's plugged into the wall. And so we think, oh, well, the light bulb must be loose. My dad goes to mess with it. He's like, no, the light bulb is nice and tight. The way that this lamp was, was it had a dial switch. So on the left side you would have to click it to turn it on. And you would have to unclick it and turn it 180 degrees and click it on the right side to turn it off. The dial had been unclicked and turned off and clicked on the right side. And so we figured, oh, well, it's fret. He just turned the light off to say, see? Told you.
+
+[Speaker D] So.
+
+[Speaker C] Another instance in this home was my parents bought me a toy dog that with batteries, it could turn on, it could blink, it could jump around, it could yip. And yap. And all of the things. And one night I was sitting and this dog turned on by itself and started doing things. I was so scared, I freaked out. I threw the toy across the room. I showed it to my dad. My dad almost didn't believe me. But again, there were so many stories about this house, you know, weird shadow men and things that would disappear. And so, yeah, that is my haunted house story. We moved out of that home. Thought Fred would follow us, but he didn't. So, yeah, thanks. Bye.
