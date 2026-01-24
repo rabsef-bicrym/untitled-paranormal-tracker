@@ -247,40 +247,114 @@ def analyze_clusters(titles, types, contents, discovered_labels):
 
 def extract_cluster_themes(contents, discovered_labels):
     """
-    Extract common words/themes for each cluster.
+    Extract phenomenological features for each cluster.
 
-    This helps interpret what each cluster represents phenomenologically.
+    Categorizes language by:
+    - Sensory modality (visual, auditory, tactile, etc.)
+    - Entity characteristics (humanoid, shadow, light, etc.)
+    - Physical effects (paralysis, cold, touched, etc.)
+    - Setting/context (bedroom, night, sleep, etc.)
+    - Emotional response (fear, peace, confusion, etc.)
+
+    This helps interpret what "brain state" each cluster might represent.
     """
     print("\n" + "="*60)
-    print("CLUSTER THEMES (common words)")
+    print("PHENOMENOLOGICAL ANALYSIS")
     print("="*60)
 
-    # Simple word frequency analysis (could be enhanced with TF-IDF)
     import re
     from collections import Counter
 
-    # Words to ignore
-    stopwords = set([
+    # Phenomenological feature categories
+    # These help identify what type of experience is being described
+    feature_categories = {
+        'visual': {
+            'saw', 'see', 'seen', 'looked', 'looking', 'appeared', 'visible',
+            'shape', 'figure', 'form', 'shadow', 'silhouette', 'outline',
+            'light', 'bright', 'glow', 'glowing', 'dark', 'darkness',
+            'eyes', 'face', 'transparent', 'solid', 'floating', 'hovering'
+        },
+        'auditory': {
+            'heard', 'hear', 'sound', 'sounds', 'noise', 'noises', 'voice',
+            'voices', 'whisper', 'whispered', 'scream', 'screamed', 'bang',
+            'footsteps', 'knock', 'knocking', 'music', 'singing', 'called',
+            'speaking', 'talking', 'loud', 'quiet', 'silent', 'silence'
+        },
+        'tactile': {
+            'felt', 'feel', 'feeling', 'touched', 'touch', 'grabbed',
+            'pressure', 'pushed', 'pulled', 'held', 'hand', 'hands',
+            'cold', 'warm', 'hot', 'freezing', 'tingling', 'vibration',
+            'weight', 'heavy', 'breath', 'breathing'
+        },
+        'paralysis_sleep': {
+            'paralyzed', 'paralysis', "couldn't move", 'frozen', 'stuck',
+            'sleep', 'sleeping', 'asleep', 'awake', 'woke', 'waking',
+            'dream', 'dreaming', 'bed', 'bedroom', 'laying', 'lying'
+        },
+        'entity_humanoid': {
+            'man', 'woman', 'person', 'figure', 'someone', 'somebody',
+            'human', 'people', 'child', 'children', 'old', 'tall',
+            'standing', 'walking', 'sat', 'sitting', 'wearing', 'clothes'
+        },
+        'entity_shadow': {
+            'shadow', 'shadows', 'dark', 'black', 'silhouette', 'outline',
+            'darker', 'blackness', 'mass', 'blob', 'shapeless'
+        },
+        'entity_light': {
+            'light', 'lights', 'bright', 'glowing', 'orb', 'orbs',
+            'white', 'beam', 'flash', 'shining', 'luminous', 'radiant'
+        },
+        'movement_behavior': {
+            'moved', 'moving', 'approached', 'coming', 'left', 'disappeared',
+            'vanished', 'flew', 'flying', 'floated', 'floating', 'hovered',
+            'watching', 'staring', 'followed', 'following', 'chased'
+        },
+        'physical_effects': {
+            'moved', 'fell', 'opened', 'closed', 'door', 'doors',
+            'objects', 'thrown', 'knocked', 'slammed', 'lights',
+            'electronics', 'turned', 'unplugged', 'batteries'
+        },
+        'time_context': {
+            'night', 'midnight', 'morning', 'evening', 'afternoon',
+            '3am', 'dark', 'daylight', 'hours', 'minutes', 'seconds',
+            'suddenly', 'instant', 'moment', 'childhood', 'years'
+        },
+        'location_setting': {
+            'house', 'home', 'room', 'bedroom', 'bathroom', 'kitchen',
+            'hallway', 'stairs', 'basement', 'attic', 'outside', 'woods',
+            'forest', 'road', 'car', 'driving', 'field', 'cemetery'
+        },
+        'emotional': {
+            'scared', 'afraid', 'fear', 'terrified', 'terror', 'panic',
+            'calm', 'peaceful', 'peace', 'confused', 'curious',
+            'angry', 'sad', 'happy', 'comfort', 'dread', 'uneasy'
+        }
+    }
+
+    # General stopwords (for "other notable" section)
+    stopwords = {
         'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
         'of', 'with', 'by', 'from', 'as', 'is', 'was', 'were', 'been', 'be',
         'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-        'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare',
-        'it', 'its', 'this', 'that', 'these', 'those', 'i', 'me', 'my',
-        'myself', 'we', 'our', 'ours', 'you', 'your', 'yours', 'he', 'him',
-        'his', 'she', 'her', 'hers', 'they', 'them', 'their', 'what', 'which',
-        'who', 'whom', 'when', 'where', 'why', 'how', 'all', 'each', 'every',
-        'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor',
+        'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'it', 'its',
+        'this', 'that', 'these', 'those', 'i', 'me', 'my', 'myself', 'we',
+        'our', 'you', 'your', 'he', 'him', 'his', 'she', 'her', 'they', 'them',
+        'their', 'what', 'which', 'who', 'when', 'where', 'why', 'how', 'all',
+        'each', 'every', 'both', 'few', 'more', 'most', 'other', 'some', 'no',
         'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just',
         'about', 'into', 'through', 'during', 'before', 'after', 'above',
-        'below', 'between', 'under', 'again', 'further', 'then', 'once',
-        'here', 'there', 'up', 'down', 'out', 'off', 'over', 'any', 'if',
-        'because', 'until', 'while', 'although', 'though', 'since', 'unless',
-        'like', 'just', 'also', 'back', 'even', 'still', 'well', 'around',
-        'really', 'something', 'thing', 'things', 'going', 'went', 'got',
-        'get', 'know', 'knew', 'think', 'thought', 'see', 'saw', 'seen',
-        'said', 'say', 'says', 'told', 'tell', 'one', 'two', 'first', 'time',
-        'make', 'made', 'way', 'come', 'came', 'being', 'now', 'never'
-    ])
+        'below', 'between', 'under', 'again', 'then', 'once', 'here', 'there',
+        'up', 'down', 'out', 'off', 'over', 'any', 'if', 'because', 'until',
+        'while', 'although', 'though', 'since', 'unless', 'like', 'also',
+        'back', 'even', 'still', 'well', 'around', 'really', 'something',
+        'thing', 'things', 'going', 'went', 'got', 'get', 'know', 'knew',
+        'think', 'thought', 'said', 'say', 'told', 'tell', 'one', 'two',
+        'first', 'time', 'make', 'made', 'way', 'come', 'came', 'being', 'now',
+        'never', 'always', 'much', 'many', 'such', 'kind', 'started', 'began',
+        'point', 'looked', 'looking', 'asked', 'didn', 'don', 'couldn', 'wasn',
+        'weren', 'isn', 'aren', 'hadn', 'wouldn', 'shouldn', 'hasn', 'haven',
+        'let', 'getting', 'yes', 'yeah', 'okay', 'right', 'left', 'sure'
+    }
 
     unique_clusters = sorted(set(discovered_labels))
 
@@ -291,15 +365,73 @@ def extract_cluster_themes(contents, discovered_labels):
         indices = [i for i, c in enumerate(discovered_labels) if c == cluster_id]
 
         # Combine all content in cluster
-        cluster_text = ' '.join(contents[i] for i in indices)
+        cluster_text = ' '.join(contents[i] for i in indices).lower()
 
-        # Tokenize and count
-        words = re.findall(r'\b[a-z]{3,}\b', cluster_text.lower())
-        word_counts = Counter(w for w in words if w not in stopwords)
+        # Tokenize
+        words = re.findall(r'\b[a-z]{3,}\b', cluster_text)
+        word_counts = Counter(words)
+        total_words = len(words)
 
-        top_words = word_counts.most_common(15)
+        print(f"\n{'='*50}")
+        print(f"CLUSTER {cluster_id} ({len(indices)} stories)")
+        print(f"{'='*50}")
 
-        print(f"\nCluster {cluster_id}: {', '.join(w for w, c in top_words)}")
+        # Score each phenomenological category
+        category_scores = {}
+        category_words = {}
+
+        for category, keywords in feature_categories.items():
+            matches = [(w, word_counts[w]) for w in keywords if word_counts[w] > 0]
+            if matches:
+                score = sum(c for _, c in matches)
+                category_scores[category] = score
+                category_words[category] = sorted(matches, key=lambda x: -x[1])[:5]
+
+        # Sort categories by score
+        sorted_categories = sorted(category_scores.items(), key=lambda x: -x[1])
+
+        if sorted_categories:
+            print("\nDominant phenomenological features:")
+            for category, score in sorted_categories[:6]:
+                words_str = ', '.join(f"{w}({c})" for w, c in category_words[category][:4])
+                print(f"  {category.upper():20} [{score:3}] {words_str}")
+
+        # Find notable words not in any category
+        all_category_words = set()
+        for keywords in feature_categories.values():
+            all_category_words.update(keywords)
+
+        other_words = [
+            (w, c) for w, c in word_counts.most_common(50)
+            if w not in all_category_words and w not in stopwords and c >= 2
+        ]
+
+        if other_words[:8]:
+            print(f"\n  Other notable: {', '.join(w for w, c in other_words[:8])}")
+
+        # Suggest possible interpretation
+        if sorted_categories:
+            top_cats = [c for c, _ in sorted_categories[:3]]
+            print(f"\n  → Possible interpretation: ", end="")
+
+            if 'paralysis_sleep' in top_cats and 'entity_shadow' in top_cats:
+                print("Hypnagogic/hypnopompic hallucination (sleep paralysis)")
+            elif 'entity_light' in top_cats and 'movement_behavior' in top_cats:
+                print("Luminous aerial phenomenon")
+            elif 'auditory' in top_cats and not 'visual' in top_cats[:2]:
+                print("Auditory hallucination / EVP-type experience")
+            elif 'physical_effects' in top_cats:
+                print("Poltergeist-type / PK phenomenon")
+            elif 'entity_humanoid' in top_cats and 'emotional' in top_cats:
+                print("Apparitional experience (full figure)")
+            elif 'tactile' in top_cats:
+                print("Somatic/tactile hallucination")
+            elif 'entity_shadow' in top_cats:
+                print("Shadow figure phenomenon")
+            elif 'visual' in top_cats and 'time_context' in top_cats:
+                print("Brief visual anomaly")
+            else:
+                print("Mixed/unclassified phenomenology")
 
 
 def update_database(ids, umap_coords_2d, cluster_labels):
