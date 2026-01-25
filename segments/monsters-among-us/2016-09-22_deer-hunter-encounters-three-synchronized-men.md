@@ -1,0 +1,35 @@
+---
+title: "Deer Hunter Encounters Three Synchronized Men"
+show: "Monsters Among Us"
+date: 2016-09-22
+timestamp_start: 1908.3
+timestamp_end: 2417.9
+timestamp_display: "31:48 - 40:17"
+caller: "Anonymous from Indiana"
+type: "time_slip"
+location: "Indiana"
+source_lines: "29-39"
+first_person: true
+---
+
+[Speaker G] Hey, I heard your most recent episode number 13 and the two calls you played about a synchronized trio of dark shakes. I have a similar story. I was deer hunting in Indiana a few years back. I think it was 2011 or 2012. I was up in a deer stand being very quiet, surveying my surroundings and trying to be as stealthy as possible. I had used odorless detergents on my hunting equipment, odorless soaps on myself, as well as masking my scent by cutting open the green husks of black walnuts. They were very pungent. Oil rubbed myself in the area around my tree stands with them, doing everything I could to remain unseen, unheard, unsmelled. When you're hunting in a stand, you're immobile and you have to dedicate yourself to remaining unnoticed to give yourself the best chance at taking down game. It was around 3pm and I hadn't I hadn't spotted any deer, but things were promising. The woods were alive with sounds of wildlife, active and normal. I don't know if you've been hunting, but when you are under, the forest can get quite lively and loud with animal activity and calls. It's when things grow silent that you know the animals are aware of you. I was scanning the area, looking hard for any sign of deer, which are extremely talented at blending into their surroundings, when I caught sight of three shapes stalking slowly through the woods. Almost like how a predator will slowly move after its prey to not attract attention. I was sure they were a hunting party. At first they stood upright, but they didn't wear any high visibility colors, which is almost suicide when you're in the woods and it's deer season. You should be wearing a blaze orange cap or vest, at least to make sure a hunter doesn't mistake you for a buck and take a shot. I was wearing a blaze orange cap myself, even though I was 15ft up in a sea deer don't see the color how people do. So it's really easy to just add a little bit of safety and there's.
+
+[Speaker C] No drawback to it.
+
+[Speaker G] I was upset at first when I noticed the people moving through the woods as I'd been sitting up this tree for hours. And the last thing I needed was some hikers stomping through the brush and spooking all the game. That's when I hit me. How odd it was that all the sounds of wildlife and bird calls hadn't stopped when I walked to my stand earlier that day. The woods had gone deathly silent at my passage, only picking up after I'd been stationary in my tree stand for about 40 minutes. But for some reason, three people somehow were moving through the woods and the animals took no notice at all, not going quiet or silent like they would for me. No matter how stealthy I moved or how masked my scent was, the woods always go silent. The three weren't walking toward me more diagonal, and if they continued, their closest point to me would be approaching pretty soon. I couldn't get a great look at the three shapes that first as they they were obstructed by trees and brush most of the time, but as they reached a bit of clearing, I noticed how perfectly in sync the three people were. They walked like they were following some choreography, or maybe soldiers marching in cadence, but without the rhyming. But it was more than that. Every single motion was mirrored perfectly and in such a weird slow motion, like they were moving through Jell O. They were also dressed identically in what looked to be some old fashioned tweed suits. I raised my scope to my eye to get a better look at these odd people. And that's when things went from weird to downright terrifying. The moment I had the gun raised toward these people, everything in the woods went completely silent. I didn't make a sound and my movement of raising the scope to my eye was subtle. And yet somehow the action of pointing my weapon at these three things had made the entire area go quiet, as if someone had just screamed at the top of their lungs. What I saw was when looking through the scope was that all three of them had stopped forward movement and were slowly turning their heads directly toward me with that eerie mirrored motion, like there was one mind controlling all three of.
+
+[Speaker E] Them.
+
+[Speaker G] At that moment. I wished that I had not worn that blaze orange cap if I was certain that it was going to be the thing to give me away. My heart was racing, but I continued.
+
+[Speaker C] To watch through the scope as the.
+
+[Speaker G] Three turned toward me, what I saw was three men who looked wrong somehow. I think the shape of their eyes was somehow off and the spacing between their nose and mouth was just slightly odd. Also their mouths, their mouths were too long. Looking at the mouths reminded me of a bullfrog. Either they were all brothers or triplets and they looked identical as far as I could tell. The last thing I remember of them was them locking eyes on my tree stand. And then the sun was gone, it was dark and I was no longer in my tree stand. I wasn't hurt, and yet my tree stand was still 15ft up. It was a climbing tree stand, which means you need to use it to get up and get down. If you search online for climbing treestand there, there are videos that show how they function and you'll see getting down while leaving it up would have been pretty painful. My gun was stuck in the ground, butt up and standing at a tension barrel sunk into the ground as if I dropped it from the stand just right or drove it in intentionally. I checked my phone for the time and it was 11:17pm Somehow, somehow I had lost eight whole hours. I always was extremely spooked to say the least. And I didn't want to try climbing the tree to get my stand back, especially in the dark. And after losing all that time, I didn't have any pain at all, not even a headache. And I'm certain if I'd fallen 15ft from my stand to the ground that I'd have at least a scrape or.
+
+[Speaker C] A bruise to show for it. But I didn't.
+
+[Speaker G] So I grabbed my gun up, its barrel was plugged with mud and I ran back to my truck, sprinting through the woods and not really caring how much noise I made. I took a friend out there the next day with me to help retrieve my stand. He laughed at me the whole time, jokingly asking me how I'd forgotten a stand that I needed to get down from the tree. I didn't tell him the story as it sounded insane to me at the time and still does. I probably would have taken this weird story to my grave without repeating it. But after hearing the other people that have seen the three synced things.
+
+[Speaker C] I.
+
+[Speaker G] Had to contribute my encounter with the triplets. I often wonder if what happened to me happened because I pointed a weapon at them and they took it as a threat, or if it was simply because I looked too closely at them.
