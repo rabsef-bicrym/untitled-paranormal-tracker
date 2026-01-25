@@ -1,0 +1,19 @@
+---
+title: "Black-Eyed Girl Hissing at Gettysburg"
+show: "Monsters Among Us"
+date: 2025-11-13
+timestamp_start: 3244.1
+timestamp_end: 3487.8
+timestamp_display: "54:04 - 58:07"
+caller: "Joe from Maryland"
+type: "ghost"
+location: "Gettysburg, Pennsylvania"
+source_lines: "66-68"
+first_person: true
+---
+
+[Speaker C] Hey Derek. This is Joe from Maryland. This happened a good 10, 15 years ago. I was living in Kansas at the time, but took a trip to Maryland to see my friends and we did a trip to Gettysburg, Pennsylvania at the time. We went to the Farnsworth house and did a adult tour around 11 o' clock at night. This was an October crisp evening. I remember it well. We went behind the newer Gettysburg High School, which where they found mass graves of Confederate Northern soldiers that were buried but yet move the bodies built the school. So we're back there, this is about 11:30, 11:45 at night. So we're like, hey, cool. You know, our tour guide was awesome. He was going back there. We were walking in this path but my gut feeling was telling me something wasn't right. You know, I've been Togethersburg several times and I've always had that feeling, but not like this. So we're getting near Culp's Hill, the big hill that the northerners took before the Confederates. This guy's telling us a story about it and we see this rustling by this bush. We're like, what is going on there? I'm like, haha, funny trick. You know, you guys are pulling one on us. Poor guy looks at me and said, no, we ain't pulling nothing on you. This little girl gets out near the bush and she's got a like ripped up dress, looks like I would say the late 1800s, early 1900s dress. She had black hair, very proper looking, old school bun in her hair. And she walks up to us and the guy says to a young lady, hon, we got to get you home. This isn't a joke. And she just kind of looks at us, looks at us. She had blue eyes. And then all of a sudden she looks at him again. He goes, hon, where do you live? We need to get you home. Her eyes went from blue to jet black, and she hissed.
+
+[Speaker B] Eric.
+
+[Speaker C] I remember this. I was a big boy at the time. I was pushing £380 at the time. I'm much lighter now, but I remember when she hissed, her head tilted sideways, her body contorted. We heard the phones crack, and she went on four legs, and she hissed and ran out. Now, my fluffy butt at the time ran past the guy that was our tour guide out the woods, across the street, gasping for air. This tour guide ran across the street, looked at me, had tears in his eyes. My friend Caitlin, tears in our eyes, running across the street, several of us. All I remember is that the fact that that's not human. And I know Culp's Hill is a bloody, bloody battle in Gettysburg. Now, did do a little bit of research on it. Said there was a girl that did die in the late 1800s and was buried near that hill. So I'm wondering if that was bad mojo or if. I don't know what to explain, Derek, but I know what I saw. I live back in Maryland now, but when I go to Gettysburg, I refuse to get near that school, and I refuse to go behind it. I don't even think they do tours back there anymore. I remember the tour well. They were great guides. I don't even know if the tour guide is still around. I remember seeing him once before, afterwards, about three years after that, and he said, hey, look, man, I know what I saw. You know what you saw. I can't explain it. I haven't seen him since. All I know is that Gettysburg has a lot of freaky stuff, but if anybody is normal and saw something like that, they would run, too. If you can find any research on it, Derek, that would be phenomenal. Dude, I love your podcast. Podcast? I've been listening to it for months now. I appreciate you and your team and everything you do. Thank you so much, Derek. Have a good evening. Bye.

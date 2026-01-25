@@ -1,0 +1,15 @@
+---
+title: "Black Cat Through Window and ABC in Field"
+show: "Monsters Among Us"
+date: 2025-11-25
+timestamp_start: 1625.9
+timestamp_end: 1858.7
+timestamp_display: "27:05 - 30:58"
+caller: "Angie from West Tennessee"
+type: "cryptid"
+location: "West Tennessee"
+source_lines: "24-24"
+first_person: false
+---
+
+[Speaker C] Hello Derek, my name is Angie and I'm calling from West Tennessee. I've been contemplating this call for a while and finally gathered the nerve to do it. I have several stories that I'd like to share, but the one that I'd like to start out with is an alien bootcat sighting. The first one happened in my mother's childhood home, probably in the late 1960s or early 1970s. She told me the story quite regularly when I was a child, and the details never deviated. She had just gotten out of the bathtub and it was after dark and she was using her window as a mirror to brush her hair in. And as she was brushing her hair she noticed two very greenish yellow eyes and a large black cat head staring through the window back at her. And obviously she screamed for my grandfather and he ran out onto the porch with the shotgun. But by the time he made it out onto the porch there was no Sign of the cat. So having heard that story since I was a little girl, I wasn't aware that we weren't supposed to have alien big cats, as you call them, in our area. I thought that cougars, mountain lions, and even pigmented big cats were just accepted as a reality in our part of the country. So when I first started listening to your podcast about two years ago, when my husband Chris turned me onto your show, I was actually quite surprised to learn that it wasn't as accepted as I thought it was, or at least as it was within my family. So fast forward 50 years to the spring of 2020, and my husband and I, who live in a very rural area about 20 miles south of the place where my mother spotted the black cat whenever she was young, my husband noticed that the animals had started acting strangely. The deer were skittish and we were seeing animals that I didn't even know existed around here. Like gray fox were darting out from everywhere and beavers were crossing the road and the deer were acting strangely. And my husband pointed it out for a couple of months that the animals were acting skittish. So one morning he got up to go to work and it was before daylight and he had just pulled out of our driveway, and as he backed out, the cars headlights shown into the field behind our house and he saw the back end of what he at the time thought was a calf that had gotten loose walking into the high grass next to the highway. And as he was getting ready to put the car into drive, he realized that the tail on what he thought was the calf was definitely a cat's tail. And as he looked at it longer, he realized that it was an alien big cat. I think that's what you call them. So he got quite a shock out of that. He had to turn around immediately and come back and tell me what he saw. I love the podcast. Thanks and keep doing what you're doing.

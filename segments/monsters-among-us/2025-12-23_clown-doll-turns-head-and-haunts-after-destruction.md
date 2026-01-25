@@ -1,0 +1,15 @@
+---
+title: "Clown Doll Turns Head and Haunts After Destruction"
+show: "Monsters Among Us"
+date: 2025-12-23
+timestamp_start: 3254.1
+timestamp_end: 3434.8
+timestamp_display: "54:14 - 57:14"
+caller: "James from Texas"
+type: "poltergeist"
+location: "Texas"
+source_lines: "36-36"
+first_person: true
+---
+
+[Speaker B] Hey, Derek, it's James from Texas. Just giving you a call. Listening to the Christmas episode and the haunted toys that they were talking about, it kind of brought back a memory. So whenever I was six or seven, I was sleeping in bed at the time. And there was a doll that was given to me at birth. It was a little clown doll. Of course, it has to always be clown. But I was laying in bed and looking up at the shelving where this doll was. And I had never moved this doll. It was always there. I don't think I ever even touched it. But I was about 6 or 7, it was at nighttime, everybody was asleep. And I could have swore to anybody that while I was looking at this doll, it turned its head towards me and it kind of looked at me. Of course, at that time, a six or seven, that scared the bejesus out of me. So I put my head under the covers, trying to contemplate what to do, and opened up the covers. It was still staring at me. So I quickly got out of bed and at 6 or 7, I knew kind of where my mom kept the scissors. She did a lot of sewing at that time. So I went and got the scissors and kind of did describe this doll. It was a very, very simple type of doll. It had the strings that were kind of the skeleton, if you will. So it had strings running through it that attached the head to the feet and the hands. And in between all of that were round discs of fabric that the string went through, so they look like it was ruffled. So I grabbed the scissors and I came back to the room, turned the lights on, I got something to stand on, grabbed the doll and I cut the string. So the doll fell apart. Well, I threw it away and didn't think twice of it. My mom was very upset with me when she found that out, actually. But anyway, a couple days after that, I was again laying in bed at night. And my closet was one of those sliding door closets with the big mirrors on them that they used to have in the 80s. And kind of your reference, the doll was on a shelf kind of right by that sliding door. So it was kind of right in the same vicinity. Well, that sliding door started open. It opened about 2 inches while I was sitting there watching it and that scared me. Then you went out the room and then not too long after that I was in my parents room just watching TV or something. I forget. But all of a sudden there were a bunch of knocks, just a series of knocks all the way down the wall and that scared me at that time. So long story short, I think that once I cut that doll string kind of made it fall apart. Either I released something or something wasn't happy with me and it just kind of stuck with me until we moved out of that house whenever I was 10 years old. Anyway, just wanted to share that story with you. Love the podcast and keep spooky buddy.

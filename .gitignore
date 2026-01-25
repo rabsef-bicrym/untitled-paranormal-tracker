@@ -38,3 +38,4 @@ Thumbs.db
 # Uncomment if you want to exclude these:
 # transcripts/
 # segments/
+.worktrees

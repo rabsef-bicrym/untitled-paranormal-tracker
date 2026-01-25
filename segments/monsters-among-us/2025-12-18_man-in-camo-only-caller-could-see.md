@@ -1,0 +1,15 @@
+---
+title: "Man in Camo Only Caller Could See"
+show: "Monsters Among Us"
+date: 2025-12-18
+timestamp_start: 3345.8
+timestamp_end: 3510.8
+timestamp_display: "55:45 - 58:30"
+caller: "Otto from Pennsylvania"
+type: "ghost"
+location: "Pittsburgh, Pennsylvania"
+source_lines: "58-58"
+first_person: true
+---
+
+[Speaker B] Hey Derek, this is otto from Pittsburgh, Pennsylvania. When I was younger, probably early 20s, I was working at a big box like home improvement store and I would work there till late at night a lot of the time I would have early morning shifts the next day. So because of that I had an aunt who lived nearby a couple blocks away. She lived in an apartment building with my cousin and my cousin would walk to the home improvement store and would meet the after work. It wasn't the greatest neighborhood so he would meet me there and I'd go to my aunt's place and stay the night and go to work early in the morning. So this was just like any other night. He came and met me. It was probably between 11:30 and midnight after everything was closed up. So we had a couple blocks and we get on this main road and it was kind of quiet, chillier night. I think it was early spring so maybe one or two people before we got to the main street that the apartment building was on. There weren't any cars on the street at the time. It was quiet. Me and my cousin were just talking to each other. I was close to the curb and my cousin was on the left side. There were no cars in the street and all the houses that we were going by, our apartment buildings, there was a long walkway that led up to each building. There weren't any trees or anything around this area specifically. So there was a person. It was a man. He was walking towards us probably 50ft. I didn't see where he came from. He was kind of just there. I believe he was African American and he had full camo fatigues on the standard like green and brown and those colors pants. He had a jacket on and he had a hat, and he was staring at me. And my cousin was talking, but I couldn't focus. This man was just staring at me. Walking closer to us. We get maybe 10, 15ft apart, and he starts to, you know, go beside my cousin on the inside of the sidewalk. I'm close to the curb because it's next to me. The man goes around my cousin to, you know, keep going down the sidewalk. As he does, he's still looking at me. And he says, what the are you looking at? And he just keeps walking past. I just kept walking. My cousin didn't say anything the whole time. He just kind of still going on talking. We get maybe 5, 10ft past, and I go, man, what was his problem? And my cousin says, who? Who are you talking about? And I turn around to point to the guy, and there's nobody there. Again, there are no cars on the street. You know, he couldn't have ran up into any houses or no bushes or anything around. It was very empty street. My cousin had the guy literally walk directly past him. He didn't see him. I have no idea about that. I think about it all the time. But thanks for your time and thanks for having me.

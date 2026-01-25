@@ -1,0 +1,15 @@
+---
+title: "Black Panther and Bigfoot Roar in Canadian Forest"
+show: "Monsters Among Us"
+date: 2025-11-25
+timestamp_start: 1077.3
+timestamp_end: 1283.7
+timestamp_display: "17:57 - 21:23"
+caller: "Kevin from Columbus, Ohio"
+type: "cryptid"
+location: "Northern Canadian forest"
+source_lines: "14-14"
+first_person: true
+---
+
+[Speaker B] Hey, Derek, it's Kevin. Columbus, Ohio. I grew up near Buffalo, near Niagara Falls there. And so to give you a little background, I used to go to Canada with my father, fishing in the very remote northern Canadian forest, the largest uninterrupted forest on the planet. So if you leave Buffalo and you go up to Toronto, then we would go another 10 hours north of Toronto, and if anybody looks at a map, it's quite remote. And then we would get up to this place and we would take about 60 miles of dirt road back into this sort of chain of lakes. Not unusual to fish up there for a week and never see anybody if you want to look on a map and see where Timmins, Ontario is, we would be about an hour and a half or two hours from there. So I started going there when I was very young. My dad and I would go several times a year and have been going up there most of my life as I got older. And, you know, my dad would go certain times and I would go certain times. And one time my dad came back and he goes, you're not going to believe what I saw. I saw a black panther cross the dirt road in front of the car when we were driving in. And when you're on the dirt road, you know, you're only doing maybe 30, 35 miles an hour. And of course, being in that Canadian wilderness a lot and being very outdoorsy, my dad absolutely knew that it was a black cat, you know, like a mountain lion. And he said, yep, it was a black panther. He called it a panther and crossed the road right in front of us. I was like, wow. I was fascinated. So years later, this is kind of a dual story on Cryptids. A friend of mine and I were up there camping, and it was in sort of early October, and about 2 o' clock in the morning, we were camping in a tent and got woken out of a dead sleep to this horrible roar, like a human being roaring at a volume that a human could never yell at. We're sort of camped in this river valley that's about maybe a mile or two miles across the. And sort of goes for about 10 miles. And whatever it was that was roaring filled the entire valley with this roar. Unbelievable roar. We were terrified. It was, of course, two o' clock in the morning. We were terrified. It went on for about 20 or 30 minutes. My buddy and I were, you know, in this seemingly little tent that just. It lit up the entire river valley. When I got home, I listened to some Bigfoot or sasquatch videos on YouTube and actually was able to find that sound. Exactly. So I still go up there and I've never heard it again, but I'm pretty sure that I may have run across one of our Bigfoot friends. So, hey, thanks so much for your podcast. Really enjoy it and keep up the good work. Thanks. Bye bye.
