@@ -23,6 +23,7 @@ export const stats = writable<Stats | null>(null);
 export const selectedStoryId = writable<string | null>(null);
 export const isLoading = writable<boolean>(false);
 export const viewMode = writable<'map' | 'vector' | 'list'>('map');
+export const sidebarOpen = writable<boolean>(false);
 
 // Derived stores
 export const frameworkCategories = derived(

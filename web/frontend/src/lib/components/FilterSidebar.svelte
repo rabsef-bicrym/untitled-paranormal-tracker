@@ -8,7 +8,8 @@
     frameworkCategories,
     filteredStoryTypes,
     getStoryTypeColor,
-    formatStoryType
+    formatStoryType,
+    sidebarOpen
   } from '$lib/stores';
 
   interface Props {
@@ -33,8 +34,22 @@
   }
 </script>
 
-<aside class="w-64 bg-[#1a1a2e] border-r border-gray-800 h-[calc(100vh-4rem)] overflow-y-auto">
+<aside class="w-64 bg-[#1a1a2e] border-r border-gray-800 h-full overflow-y-auto">
   <div class="p-4">
+    <!-- Close button (mobile only) -->
+    <div class="md:hidden flex items-center justify-between mb-4 -mt-1">
+      <h2 class="text-lg font-semibold text-white">Filters</h2>
+      <button
+        class="p-2.5 -mr-2.5 text-gray-400 hover:text-white active:text-purple-400"
+        onclick={() => sidebarOpen.set(false)}
+        aria-label="Close filters"
+      >
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
     <!-- Story count -->
     <div class="mb-6">
       <div class="text-2xl font-bold text-white">{storyCount}</div>
