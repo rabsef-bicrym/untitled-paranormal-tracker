@@ -83,12 +83,18 @@
 
     updatePoints();
 
-    // Event listeners
+    // Event listeners - both mouse and touch
     container.addEventListener('mousedown', onMouseDown);
     container.addEventListener('mousemove', onMouseMove);
     container.addEventListener('mouseup', onMouseUp);
     container.addEventListener('mouseleave', onMouseUp);
-    container.addEventListener('wheel', onWheel);
+    container.addEventListener('wheel', onWheel, { passive: false });
+
+    // Touch events for mobile
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEnd);
+
     window.addEventListener('resize', onResize);
 
     // Animation loop
@@ -108,6 +114,9 @@
     container?.removeEventListener('mouseup', onMouseUp);
     container?.removeEventListener('mouseleave', onMouseUp);
     container?.removeEventListener('wheel', onWheel);
+    container?.removeEventListener('touchstart', onTouchStart);
+    container?.removeEventListener('touchmove', onTouchMove);
+    container?.removeEventListener('touchend', onTouchEnd);
     window.removeEventListener('resize', onResize);
   });
 
@@ -141,8 +150,12 @@
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
+    // Larger points on mobile for better touch targets
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const pointSize = isMobile ? 1.2 : 0.8;
+
     const material = new THREE.PointsMaterial({
-      size: 0.8,
+      size: pointSize,
       vertexColors: true,
       transparent: true,
       opacity: 0.9,
@@ -202,6 +215,56 @@
     }
   }
 
+  // Touch event handlers for mobile
+  let touchStartDistance = 0;
+  let lastTouchX = 0;
+  let lastTouchY = 0;
+
+  function onTouchStart(e: TouchEvent) {
+    if (e.touches.length === 1) {
+      isDragging = true;
+      lastTouchX = e.touches[0].clientX;
+      lastTouchY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+      // Pinch to zoom
+      isDragging = false;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      touchStartDistance = Math.sqrt(dx * dx + dy * dy);
+    }
+  }
+
+  function onTouchMove(e: TouchEvent) {
+    e.preventDefault();
+
+    if (e.touches.length === 1 && isDragging) {
+      // Rotate
+      const deltaX = e.touches[0].clientX - lastTouchX;
+      const deltaY = e.touches[0].clientY - lastTouchY;
+      rotation.y += deltaX * 0.01;
+      rotation.x += deltaY * 0.01;
+      lastTouchX = e.touches[0].clientX;
+      lastTouchY = e.touches[0].clientY;
+      tooltip = null;
+    } else if (e.touches.length === 2) {
+      // Pinch to zoom
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const delta = touchStartDistance - distance;
+      zoom += delta * 0.1;
+      zoom = Math.max(20, Math.min(150, zoom));
+      if (camera) {
+        camera.position.z = zoom;
+      }
+      touchStartDistance = distance;
+    }
+  }
+
+  function onTouchEnd() {
+    isDragging = false;
+  }
+
   function onResize() {
     if (!camera || !renderer) return;
     camera.aspect = container.clientWidth / container.clientHeight;
@@ -251,45 +314,52 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class="relative w-full h-full cursor-grab"
+  class="relative w-full h-full touch-none cursor-grab active:cursor-grabbing"
   bind:this={container}
   onclick={handleClick}
 >
   {#if tooltip}
     <div
-      class="absolute z-10 px-3 py-2 bg-[#1a1a2e] border border-gray-700 rounded-lg shadow-lg pointer-events-none"
-      style="left: {tooltip.x + 10}px; top: {tooltip.y + 10}px; max-width: 300px;"
+      class="absolute z-10 px-3 md:px-4 py-2 md:py-3 bg-[#1a1a2e]/95 backdrop-blur border border-gray-700 rounded-lg md:rounded-xl shadow-xl pointer-events-none max-w-[280px] md:max-w-sm"
+      style="left: {Math.min(tooltip.x + 10, typeof window !== 'undefined' ? window.innerWidth - 300 : tooltip.x + 10)}px; top: {tooltip.y + 10}px;"
     >
-      <div class="font-medium text-white text-sm">{tooltip.point.title}</div>
+      <div class="font-semibold text-white text-sm md:text-base leading-snug">{tooltip.point.title}</div>
       {#if tooltip.point.story_type}
-        <div class="flex items-center gap-2 mt-1">
+        <div class="flex items-center gap-2 mt-1.5">
           <span
-            class="w-2 h-2 rounded-full"
+            class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full flex-shrink-0"
             style="background-color: {getStoryTypeColor(tooltip.point.story_type)}"
           ></span>
-          <span class="text-xs text-gray-400">{formatStoryType(tooltip.point.story_type)}</span>
+          <span class="text-xs md:text-sm text-gray-400 font-medium">{formatStoryType(tooltip.point.story_type)}</span>
         </div>
       {/if}
     </div>
   {/if}
 
   <!-- Legend -->
-  <div class="absolute bottom-4 left-4 bg-[#1a1a2e]/90 border border-gray-700 rounded-lg p-3 z-10">
-    <div class="text-xs text-gray-400 mb-2">Story Types</div>
-    <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+  <div class="absolute bottom-3 md:bottom-4 left-3 md:left-4 bg-[#1a1a2e]/95 backdrop-blur border border-gray-700 rounded-lg md:rounded-xl p-2.5 md:p-3 z-10 max-w-[180px] md:max-w-none">
+    <div class="text-xs md:text-sm text-gray-400 mb-2 font-semibold">Story Types</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-xs md:text-sm">
       {#each Object.entries({ ghost: '#9b59b6', shadow_person: '#2c3e50', ufo: '#3498db', alien_encounter: '#1abc9c', cryptid: '#27ae60', haunting: '#8e44ad' }) as [type, color]}
-        <div class="flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full" style="background-color: {color}"></span>
-          <span class="text-gray-300">{formatStoryType(type)}</span>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full flex-shrink-0" style="background-color: {color}"></span>
+          <span class="text-gray-300 truncate">{formatStoryType(type)}</span>
         </div>
       {/each}
     </div>
   </div>
 
   <!-- Instructions -->
-  <div class="absolute top-4 right-4 bg-[#1a1a2e]/90 border border-gray-700 rounded-lg p-3 z-10 text-xs text-gray-400">
-    <div>Drag to rotate</div>
-    <div>Scroll to zoom</div>
-    <div>Click to select</div>
+  <div class="absolute top-3 md:top-4 right-3 md:right-4 bg-[#1a1a2e]/95 backdrop-blur border border-gray-700 rounded-lg md:rounded-xl p-2.5 md:p-3 z-10 text-xs md:text-sm text-gray-400">
+    <div class="hidden md:block">
+      <div>Drag to rotate</div>
+      <div>Scroll to zoom</div>
+      <div>Click to select</div>
+    </div>
+    <div class="md:hidden">
+      <div>Drag to rotate</div>
+      <div>Pinch to zoom</div>
+      <div>Tap to select</div>
+    </div>
   </div>
 </div>

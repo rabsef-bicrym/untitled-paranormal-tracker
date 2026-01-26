@@ -116,12 +116,12 @@
   }
 </script>
 
-<div class="flex h-[calc(100vh-4rem)]">
+<div class="flex h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)]">
   <!-- Sidebar -->
   <FilterSidebar storyCount={getDisplayCount()} />
 
   <!-- Main content area -->
-  <div class="flex-1 relative">
+  <div class="flex-1 relative w-full lg:w-auto">
     {#if $viewMode === 'map'}
       <USMap stories={mapStories} onStoryClick={handleStoryClick} />
     {:else if $viewMode === 'vector'}
@@ -137,18 +137,37 @@
     <!-- Loading overlay -->
     {#if loading && $viewMode !== 'list'}
       <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-        <div class="text-white">Loading...</div>
+        <div class="text-white text-lg">Loading...</div>
       </div>
     {/if}
   </div>
 
   <!-- Search results panel (overlay on map/vector views) -->
   {#if $searchQuery.trim() && $viewMode !== 'list' && searchResults.length > 0}
-    <div class="absolute right-0 top-16 bottom-0 w-80 bg-[#1a1a2e]/95 border-l border-gray-800 z-10">
-      <div class="p-3 border-b border-gray-800">
-        <h3 class="text-sm font-medium text-white">
+    <div class="
+      absolute
+      right-0 lg:right-0
+      top-0 lg:top-0
+      bottom-0 lg:bottom-0
+      w-full sm:w-96 lg:w-80
+      bg-[#1a1a2e]/95
+      border-l border-gray-800
+      z-10
+      overflow-hidden
+    ">
+      <div class="p-3 md:p-4 border-b border-gray-800 flex items-center justify-between">
+        <h3 class="text-sm md:text-base font-medium text-white">
           Search Results ({searchResults.length})
         </h3>
+        <button
+          class="lg:hidden p-2 -mr-2 text-gray-400 hover:text-white active:text-purple-400 transition-colors touch-manipulation"
+          onclick={() => searchQuery.set('')}
+          aria-label="Close search results"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
       <StoryList
         stories={searchResults}

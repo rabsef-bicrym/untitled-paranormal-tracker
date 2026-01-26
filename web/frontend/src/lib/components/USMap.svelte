@@ -62,7 +62,18 @@
       bearing: INITIAL_VIEW.bearing,
     });
 
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.addControl(
+      new maplibregl.NavigationControl({
+        showCompass: true,
+        showZoom: true,
+        visualizePitch: false
+      }),
+      'top-right'
+    );
+
+    // Disable map rotation for better mobile UX
+    map.dragRotate.disable();
+    map.touchZoomRotate.disableRotation();
 
     // Initialize deck.gl overlay
     deck = new Deck({
@@ -130,27 +141,33 @@
   function updateLayers() {
     if (!deck) return;
 
+    // Larger touch targets on mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const minRadius = isMobile ? 8 : 6;
+    const maxRadius = isMobile ? 24 : 20;
+    const baseRadius = isMobile ? 10 : 8;
+
     const scatterLayer = new ScatterplotLayer({
       id: 'stories',
       data: stories,
       pickable: true,
-      opacity: 0.8,
+      opacity: 0.85,
       stroked: true,
       filled: true,
       radiusScale: 1,
-      radiusMinPixels: 6,
-      radiusMaxPixels: 20,
-      lineWidthMinPixels: 1,
+      radiusMinPixels: minRadius,
+      radiusMaxPixels: maxRadius,
+      lineWidthMinPixels: isMobile ? 1.5 : 1,
       getPosition: (d: MapStory) => [d.lng, d.lat],
-      getRadius: 8,
+      getRadius: baseRadius,
       getFillColor: (d: MapStory) => {
         const hex = getStoryTypeColor(d.story_type);
         const r = parseInt(hex.slice(1, 3), 16);
         const g = parseInt(hex.slice(3, 5), 16);
         const b = parseInt(hex.slice(5, 7), 16);
-        return [r, g, b, 200];
+        return [r, g, b, 220];
       },
-      getLineColor: [255, 255, 255, 100],
+      getLineColor: [255, 255, 255, 120],
     });
 
     deck.setProps({ layers: [scatterLayer] });
@@ -166,21 +183,21 @@
 <div class="relative w-full h-full" bind:this={container}>
   {#if tooltip}
     <div
-      class="absolute z-10 px-3 py-2 bg-[#1a1a2e] border border-gray-700 rounded-lg shadow-lg pointer-events-none"
-      style="left: {tooltip.x + 10}px; top: {tooltip.y + 10}px; max-width: 300px;"
+      class="absolute z-10 px-3 md:px-4 py-2 md:py-3 bg-[#1a1a2e]/95 backdrop-blur border border-gray-700 rounded-lg md:rounded-xl shadow-xl pointer-events-none max-w-[280px] md:max-w-sm"
+      style="left: {Math.min(tooltip.x + 10, typeof window !== 'undefined' ? window.innerWidth - 300 : tooltip.x + 10)}px; top: {tooltip.y + 10}px;"
     >
-      <div class="font-medium text-white text-sm">{tooltip.story.title}</div>
+      <div class="font-semibold text-white text-sm md:text-base leading-snug">{tooltip.story.title}</div>
       {#if tooltip.story.story_type}
-        <div class="flex items-center gap-2 mt-1">
+        <div class="flex items-center gap-2 mt-1.5">
           <span
-            class="w-2 h-2 rounded-full"
+            class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full flex-shrink-0"
             style="background-color: {getStoryTypeColor(tooltip.story.story_type)}"
           ></span>
-          <span class="text-xs text-gray-400">{formatStoryType(tooltip.story.story_type)}</span>
+          <span class="text-xs md:text-sm text-gray-400 font-medium">{formatStoryType(tooltip.story.story_type)}</span>
         </div>
       {/if}
       {#if tooltip.story.location}
-        <div class="text-xs text-gray-500 mt-1">{tooltip.story.location}</div>
+        <div class="text-xs md:text-sm text-gray-500 mt-1">{tooltip.story.location}</div>
       {/if}
     </div>
   {/if}
