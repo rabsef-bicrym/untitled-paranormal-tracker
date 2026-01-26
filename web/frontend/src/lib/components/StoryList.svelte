@@ -1,0 +1,92 @@
+<script lang="ts">
+  import type { Story, SearchResult } from '$lib/api';
+  import { getStoryTypeColor, formatStoryType } from '$lib/stores';
+
+  interface Props {
+    stories: (Story | SearchResult)[];
+    onStoryClick?: (story: Story | SearchResult) => void;
+    loading?: boolean;
+  }
+
+  let { stories, onStoryClick, loading = false }: Props = $props();
+
+  function isSearchResult(story: Story | SearchResult): story is SearchResult {
+    return 'score' in story;
+  }
+</script>
+
+<div class="h-full overflow-y-auto">
+  {#if loading}
+    <div class="p-4 space-y-4">
+      {#each Array(5) as _, i}
+        <div class="bg-[#1a1a2e] border border-gray-800 rounded-lg p-4 animate-pulse">
+          <div class="h-5 bg-gray-700 rounded w-3/4 mb-2"></div>
+          <div class="h-4 bg-gray-700 rounded w-1/2 mb-2"></div>
+          <div class="h-4 bg-gray-700 rounded w-full"></div>
+        </div>
+      {/each}
+    </div>
+  {:else if stories.length === 0}
+    <div class="flex items-center justify-center h-full text-gray-500">
+      No stories found
+    </div>
+  {:else}
+    <div class="p-4 space-y-3">
+      {#each stories as story}
+        <button
+          class="w-full text-left bg-[#1a1a2e] border border-gray-800 rounded-lg p-4 hover:border-purple-600/50 transition-colors"
+          onclick={() => onStoryClick?.(story)}
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-medium text-white truncate">{story.title}</h3>
+
+              <div class="flex items-center gap-3 mt-1 text-sm text-gray-400">
+                {#if story.story_type}
+                  <div class="flex items-center gap-1">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style="background-color: {getStoryTypeColor(story.story_type)}"
+                    ></span>
+                    <span>{formatStoryType(story.story_type)}</span>
+                  </div>
+                {/if}
+                {#if story.location}
+                  <span class="text-gray-500">{story.location}</span>
+                {/if}
+              </div>
+
+              {#if story.podcast_name || story.air_date}
+                <div class="mt-1 text-xs text-gray-500">
+                  {story.podcast_name}
+                  {#if story.air_date}
+                    &middot; {story.air_date}
+                  {/if}
+                </div>
+              {/if}
+
+              {#if isSearchResult(story) && story.snippet}
+                <p class="mt-2 text-sm text-gray-400 line-clamp-2">
+                  {story.snippet}...
+                </p>
+              {:else if story.summary}
+                <p class="mt-2 text-sm text-gray-400 line-clamp-2">
+                  {story.summary}
+                </p>
+              {/if}
+            </div>
+
+            {#if isSearchResult(story) && story.score !== undefined}
+              <div class="flex-shrink-0 text-right">
+                <div class="text-xs text-gray-500">Score</div>
+                <div class="text-sm text-purple-400 font-medium">
+                  {(story.score * 100).toFixed(0)}%
+                </div>
+              </div>
+            {/if}
+          </div>
+        </button>
+      {/each}
+    </div>
+  {/if}
+</div>
