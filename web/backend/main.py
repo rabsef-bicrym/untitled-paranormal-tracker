@@ -101,7 +101,8 @@ async def health():
             cur.execute("SELECT 1")
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Database error: {e}")
+        # Return degraded status but still 200 for basic health checks
+        return {"status": "degraded", "database": "disconnected", "error": str(e)}
 
 
 @app.get("/api/stats", response_model=StatsResponse)
