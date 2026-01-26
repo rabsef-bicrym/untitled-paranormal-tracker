@@ -1,0 +1,15 @@
+---
+title: "Three Knocks at Cabin Door in Fog"
+show: "Monsters Among Us"
+date: 2020-06-11
+timestamp_start: 1011.2
+timestamp_end: 1190.8
+timestamp_display: "16:51 - 19:50"
+caller: "Michael from Gold Beach area"
+type: "ghost"
+location: "Lobster Creek, Oregon"
+source_lines: "21-21"
+first_person: true
+---
+
+[Speaker D] Hey Derek, this is Michael. I'm calling because I was just listening to the most recent episode and I heard Joe's call about the missed figures and the knock after he saw them. I am calling because I heard that and it really freaked me out, honestly. I grew up in the Gold beach area. I lived there for 10 years when I was younger, and one time something very similar happened to me. I was camping up at the Lobster Creek campground about 10, 15 miles up the Rogue river there in Gold beach. And I was staying in a cabin with my girlfriend. We were the only ones up at the campground. It was completely deserted. Generator wasn't on, anything like that, so there was no power. And we're staying in in one of the cabins and There was the front door. We walk in and the front door and there's a hallway and we were to the left side, we were in there. We had the door closed. So our door and the front door were both closed. And we were just laying there hanging out. And it's probably two in the morning and we hear the front door open and then slam shut and we just kind of stop and we get really nervous and really freaked out and we hear footsteps coming down the hallway towards our door. And then we hear just three loud bangs. Just bang, bang, bang on our door and we don't move. We are absolutely terrified. So we just stay awake the entire night because we don't know if there's someone out there or anything like that. We don't hear any noises afterwards, just the three loud bangs. And so we get in the morning probably about 7 o' clock in the morning. We could have stayed there until noon, but we really just wanted to get out of there while it was as soon as it got light outside so that we could see and not crash or anything like that because it's a pretty windy road to get up there. And we get up about 7 o' clock in the morning and we go outside and it's a very, very deep fog, like can't see more than 20ft ahead of you. And I get really nervous about driving in it just because I had older car and didn't have the best anything really. But we're like, we can't stay here anymore, it's too freaky. So we get into our car and we start driving away. And at the, at the gate of the campground, I had to get out of my car and open up the bar, drive through, get back out and close it. And as I get back into my car after closing it, I look in my rearview mirror and it looks like there's a person standing there behind the bar. But I can't make out any details because it's super foggy and everything like that. But it just terrified me, honestly. So when, when Joe called in about seeing figures in the mist and then hearing three loud knocks afterwards, it really just kind of got me riled up. So that's my story, Joe. I. I heard you. I know what it's like. Been through that. Not the only one. Thanks, Derek. Have a great night.

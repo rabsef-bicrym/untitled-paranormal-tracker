@@ -1,0 +1,15 @@
+---
+title: "Two Men Walking in Perfect Mirror Sync"
+show: "Monsters Among Us"
+date: 2020-06-11
+timestamp_start: 3206.0
+timestamp_end: 3362.0
+timestamp_display: "53:25 - 56:02"
+caller: "Sam from Indiana"
+type: "other"
+location: "Indiana"
+source_lines: "37-37"
+first_person: true
+---
+
+[Speaker D] Hi, Derek, this is Sam from Indiana. I've told you before, I love listening to your podcast on third shift. It keeps me awake. But I was not prepared for what I heard today on one of your earlier seasons. Season one. I'm listening through from the beginning and. Okay, so I. You were asking back in season one about encounters with. With the mirrored men, which when I first heard the first story about it, it sent chills through my spine because I. I think I might have encountered them before. So I was going into work one morning, well, evening, you know, depending on how you look at it. But it was about 11pm this was last year. It was warm outside, so it was sometime either late spring through early Fall. And I remember I had gone out to my car and looked down my street, and I've got a very poorly lit street, but it's not a busy street at all. And my back porch light is actually the brightest light on the street. And it kind of shines out quite a ways. But there's a major road, a highway that runs down at the end of my street, and that one is well lit. And when I was going out to my car, I'm always kind of creeped out because there's a blind wall where there's a blind corner, I should say, where there's a wall of my house that when I go past it to go to my car, I can't see until I'm right there. So I'm always, you know, jumpy and worried there's going to be something on. On the other side. Well, I went out, and of course there wasn't. But when I went and looked down the street, there were not three men, but there were two men walking side by side. And it was eerie the way they were walking. The best way I know to describe it, it was almost like not quite dancing, but they were kind of walking to the left and to the right. And when one would move to the left and to the right, the other would do the exact same and really creep me out. There's a liquor store down the road from where I live. So I was thinking that maybe, you know, it's two guys that got drunk, you know, maybe walking home or there's several bars around. I thought maybe they're walking home and just, you know, maybe doing some kind of weird walk. And that might still be the case. But I heard that story and it just gave me chills because at the time, it just gave me a weird, eerie feeling. I didn't lose any time. There was no other indication of anything out of the ordinary other than these two men walking side by side in this weird way that. I mean, mirrored men is the best way to describe it. And I really appreciate you having those stories on there because I'm going to be on the lookout from now on. If that was something that, you know, other people are witnessing, that's pretty terrifying thing to hear. So I really appreciate your podcast, and I will definitely be more wary of groups of men walking in a mirrored fashion from here on out. Thanks, Derek.

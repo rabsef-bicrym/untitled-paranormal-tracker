@@ -1,0 +1,15 @@
+---
+title: "Hovering Light Shoots Straight Up Over Fort Peck"
+show: "Monsters Among Us"
+date: 2026-01-25
+timestamp_start: 2064.8
+timestamp_end: 2228.1
+timestamp_display: "34:24 - 37:08"
+caller: "Bill from Franklin, Idaho"
+type: "ufo"
+location: "Fort Peck Reservoir, Montana"
+source_lines: "19-19"
+first_person: true
+---
+
+[Speaker B] Hello Derek, My name is Bill. I'm calling from Franklin, Idaho. This took place probably about 35 to 40 years ago. So I was probably about 12, 14 years old in my family, and I went up to Glendive, Montana to a family union and where my mom was from. And while we were up there, we, my mom got together with one of her old high school friends and we went up with her family and our family to Fort Peck Reservoir for a overnight thing. They had a houseboat up there and my mom's friend, she had a son that was about the same age as I was. And we decided that we were going to sleep on top of the houseboat. And we were laying there, we were talking, telling stories and stuff like that. And it was, it was a clear night. We were watching the stars and all. It was really pretty and all. But then all of a sudden we see this light. Now I'm not exactly sure, you know, I'm sort of bad on directions, but I believe that the light started traveling towards us from the east. And it was going. It was just sort of like a. Just a bright, bright light. It was traveling towards us and it got sort of like right above us and I don't know how many feet, whatever, in the air, but it was far up there, but. And it just sort of hovered there for a little while and we were just like sort of dumbfounded by this thing how I just sort of stopped and then all of a sudden it just shot straight up into the air and then stop and then just shot again in the same direction that it was traveling. If it was coming from the east, it would have been traveling west and I don't know, just. We both were just dumbfounded. We didn't know what in the world it was. Talked about it, I do remember talking about it to my, my parents and they just sort of thought, you know, just, you know, something that us kids, you know, are making up, you know, that we probably were telling ghost stories and stuff like that. But at that time I wouldn't have been telling ghost stories. I was petrified of ghost stories, ghosts, things like that. I didn't even go to my first like attraction haunted house until probably when I was in high school. But now, I mean, I love it. I actually do work in a haunted house and I've sort of gone back and I've heard that there is a base up in Canada that is known for experimental planes and stuff like that. And I don't know if that's what it was or stuff. I try to explain exactly what it was and that's sort of what I thought because that it might be that. But it was just sort of weird how fast it took off going, you know. I really like the show. I've been listening to it for years now. Keep meaning to call in. I've got a lot of different stories. I consider myself a skeptical believer and I'd like to call back sometime and share those with you. Thank you. Bye.
