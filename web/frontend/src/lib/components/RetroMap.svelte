@@ -809,7 +809,7 @@
 
   function animate() {
     animationId = requestAnimationFrame(animate);
-    updateLOD(); // Update LOD based on camera distance
+    // updateLOD(); // DISABLED: LOD system hides hexagons, making tiling less dense
     updateWave();
     controls?.update();
     renderer?.render(scene, camera);
