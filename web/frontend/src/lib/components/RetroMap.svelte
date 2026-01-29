@@ -5,6 +5,7 @@
   import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
   import type { MapStory } from '$lib/api';
   import MapClusterWindow from '$lib/components/MapClusterWindow.svelte';
+  import * as haptics from '$lib/utils/haptics';
 
   interface Props {
     stories?: MapStory[];
@@ -571,7 +572,7 @@
 
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
+    controls.dampingFactor = 0.15; // Smoother damping for touch
     controls.minDistance = 80;
     controls.maxDistance = 250;
     controls.autoRotate = true;
@@ -584,6 +585,12 @@
       LEFT: THREE.MOUSE.ROTATE,
       MIDDLE: THREE.MOUSE.DOLLY,
       RIGHT: -1  // Disable OrbitControls right-click
+    };
+
+    // Touch controls (two-finger rotation and pinch work automatically)
+    controls.touches = {
+      ONE: THREE.TOUCH.ROTATE,
+      TWO: THREE.TOUCH.DOLLY_PAN
     };
 
     raycaster = new THREE.Raycaster();
@@ -763,6 +770,186 @@
     renderer?.render(scene, camera);
   }
 
+  // Touch gesture state
+  let touchData = {
+    initialDistance: 0,
+    lastTapTime: 0,
+    longPressTimer: null as ReturnType<typeof setTimeout> | null,
+    touchStartPos: { x: 0, y: 0 },
+  };
+
+  // Touch handlers for enhanced mobile support
+  function handleTouchStart(event: TouchEvent) {
+    const touches = event.touches;
+
+    if (touches.length === 1) {
+      // Single touch - potential long-press or tap
+      const touch = touches[0];
+      touchData.touchStartPos = { x: touch.clientX, y: touch.clientY };
+
+      // Start long-press timer (500ms)
+      touchData.longPressTimer = setTimeout(() => {
+        handleLongPress(touch);
+      }, 500);
+    } else if (touches.length === 2) {
+      // Two-finger touch - pinch-to-zoom is handled by OrbitControls
+      // Just store initial distance for smooth damping
+      const dx = touches[1].clientX - touches[0].clientX;
+      const dy = touches[1].clientY - touches[0].clientY;
+      touchData.initialDistance = Math.sqrt(dx * dx + dy * dy);
+
+      // Cancel long-press on multi-touch
+      if (touchData.longPressTimer) {
+        clearTimeout(touchData.longPressTimer);
+        touchData.longPressTimer = null;
+      }
+    }
+  }
+
+  function handleTouchMove(event: TouchEvent) {
+    // Cancel long-press if finger moves
+    if (touchData.longPressTimer) {
+      clearTimeout(touchData.longPressTimer);
+      touchData.longPressTimer = null;
+    }
+
+    // OrbitControls handles two-finger rotation and pinch-to-zoom automatically
+  }
+
+  function handleTouchEnd(event: TouchEvent) {
+    // Cancel long-press timer
+    if (touchData.longPressTimer) {
+      clearTimeout(touchData.longPressTimer);
+      touchData.longPressTimer = null;
+    }
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    const endX = touch.clientX;
+    const endY = touch.clientY;
+    const distance = Math.sqrt(
+      Math.pow(endX - touchData.touchStartPos.x, 2) +
+      Math.pow(endY - touchData.touchStartPos.y, 2)
+    );
+
+    // Check for tap (minimal movement)
+    if (distance < 10) {
+      const now = Date.now();
+      const timeSinceLast = now - touchData.lastTapTime;
+
+      if (timeSinceLast < 300) {
+        // Double-tap detected - reset camera
+        handleDoubleTap();
+        touchData.lastTapTime = 0;
+      } else {
+        // Single tap - check for tower click
+        touchData.lastTapTime = now;
+        handleTouchTap(touch);
+      }
+    }
+
+    touchData.initialDistance = 0;
+  }
+
+  function handleLongPress(touch: Touch) {
+    // Long-press on tower - show story detail
+    if (!raycaster || !camera || !container) return;
+
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(towerMeshes);
+
+    if (hits.length > 0) {
+      const towerIndex = towerMeshes.indexOf(hits[0].object as THREE.Mesh);
+      if (towerIndex !== -1) {
+        const tower = storyTowers[towerIndex];
+        haptics.medium();
+
+        // Open cluster window
+        activeCluster = {
+          stories: tower.stories,
+          count: tower.count,
+          position: { x: touch.clientX + 16, y: touch.clientY + 16 }
+        };
+      }
+    }
+  }
+
+  function handleDoubleTap() {
+    // Reset camera to default position
+    if (!camera || !controls) return;
+
+    haptics.light();
+
+    // Animate camera back to starting position
+    const startPos = camera.position.clone();
+    const targetPos = new THREE.Vector3();
+
+    // Calculate default camera position
+    const lat = CAMERA_LAT;
+    const lng = CAMERA_LNG;
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lng + 180) * (Math.PI / 180);
+    const distance = CAMERA_DISTANCE;
+
+    targetPos.x = distance * Math.sin(phi) * Math.cos(theta);
+    targetPos.y = distance * Math.cos(phi);
+    targetPos.z = distance * Math.sin(phi) * Math.sin(theta);
+
+    // Reset offset
+    currentOffsetX = CAMERA_OFFSET_X;
+    currentOffsetY = CAMERA_OFFSET_Y;
+
+    // Simple animation over 800ms
+    const duration = 800;
+    const startTime = Date.now();
+
+    function animateReset() {
+      const now = Date.now();
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+
+      camera.position.lerpVectors(startPos, targetPos, eased);
+      updateCameraPosition();
+
+      if (progress < 1) {
+        requestAnimationFrame(animateReset);
+      }
+    }
+
+    animateReset();
+  }
+
+  function handleTouchTap(touch: Touch) {
+    // Handle tower click on tap
+    if (!raycaster || !camera || !container) return;
+
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(towerMeshes);
+
+    if (hits.length > 0) {
+      const towerIndex = towerMeshes.indexOf(hits[0].object as THREE.Mesh);
+      if (towerIndex !== -1) {
+        const tower = storyTowers[towerIndex];
+        haptics.light();
+
+        activeCluster = {
+          stories: tower.stories,
+          count: tower.count,
+          position: { x: touch.clientX + 16, y: touch.clientY + 16 }
+        };
+      }
+    }
+  }
+
   onMount(async () => {
     if (!browser) return;
 
@@ -776,6 +963,12 @@
     container?.addEventListener('click', handleClick);
     container?.addEventListener('mouseleave', handleMouseLeave);
     container?.addEventListener('contextmenu', (e) => e.preventDefault()); // Prevent right-click menu
+
+    // Touch event listeners
+    container?.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container?.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container?.addEventListener('touchend', handleTouchEnd, { passive: true });
+
     // Trigger first wave after 5 seconds
     lastWaveTime = Date.now() - WAVE_INTERVAL + 5000;
     animate();
@@ -783,6 +976,12 @@
 
   onDestroy(() => {
     if (animationId) cancelAnimationFrame(animationId);
+
+    // Clean up long-press timer
+    if (touchData.longPressTimer) {
+      clearTimeout(touchData.longPressTimer);
+    }
+
     window.removeEventListener('resize', handleResize);
     window.removeEventListener('mouseup', handleMouseUp);
     window.removeEventListener('mousemove', handlePanMove);
@@ -790,6 +989,12 @@
     container?.removeEventListener('mousedown', handleMouseDown);
     container?.removeEventListener('click', handleClick);
     container?.removeEventListener('mouseleave', handleMouseLeave);
+
+    // Remove touch listeners
+    container?.removeEventListener('touchstart', handleTouchStart);
+    container?.removeEventListener('touchmove', handleTouchMove);
+    container?.removeEventListener('touchend', handleTouchEnd);
+
     controls?.dispose();
     renderer?.dispose();
     scene?.traverse((object) => {

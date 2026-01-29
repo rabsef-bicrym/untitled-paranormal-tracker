@@ -8,6 +8,7 @@
   import type { VectorPoint } from '$lib/api';
   import { formatStoryType, getStoryTypeColor } from '$lib/stores';
   import { createGlowTexture, createNebulaTexture } from '$lib/three/textures';
+  import * as haptics from '$lib/utils/haptics';
 
   interface Props {
     points: VectorPoint[];
@@ -192,11 +193,17 @@
 
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
+    controls.dampingFactor = 0.15; // Smoother damping for touch
     controls.minDistance = 70;
     controls.maxDistance = 220;
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.4;
+
+    // Touch controls (two-finger rotation and pinch work automatically)
+    controls.touches = {
+      ONE: THREE.TOUCH.ROTATE,
+      TWO: THREE.TOUCH.DOLLY_PAN
+    };
 
     raycaster = new THREE.Raycaster();
     raycaster.params.Points = { threshold: 1.2 };
@@ -310,20 +317,174 @@
     composer.render();
   }
 
+  // Touch gesture state
+  let touchData = {
+    initialDistance: 0,
+    lastTapTime: 0,
+    longPressTimer: null as ReturnType<typeof setTimeout> | null,
+    touchStartPos: { x: 0, y: 0 },
+  };
+
+  // Touch handlers for enhanced mobile support
+  function handleTouchStart(event: TouchEvent) {
+    const touches = event.touches;
+
+    if (touches.length === 1) {
+      const touch = touches[0];
+      touchData.touchStartPos = { x: touch.clientX, y: touch.clientY };
+
+      touchData.longPressTimer = setTimeout(() => {
+        handleLongPress(touch);
+      }, 500);
+    } else if (touches.length === 2) {
+      const dx = touches[1].clientX - touches[0].clientX;
+      const dy = touches[1].clientY - touches[0].clientY;
+      touchData.initialDistance = Math.sqrt(dx * dx + dy * dy);
+
+      if (touchData.longPressTimer) {
+        clearTimeout(touchData.longPressTimer);
+        touchData.longPressTimer = null;
+      }
+    }
+  }
+
+  function handleTouchMove(event: TouchEvent) {
+    if (touchData.longPressTimer) {
+      clearTimeout(touchData.longPressTimer);
+      touchData.longPressTimer = null;
+    }
+  }
+
+  function handleTouchEnd(event: TouchEvent) {
+    if (touchData.longPressTimer) {
+      clearTimeout(touchData.longPressTimer);
+      touchData.longPressTimer = null;
+    }
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    const endX = touch.clientX;
+    const endY = touch.clientY;
+    const distance = Math.sqrt(
+      Math.pow(endX - touchData.touchStartPos.x, 2) +
+      Math.pow(endY - touchData.touchStartPos.y, 2)
+    );
+
+    if (distance < 10) {
+      const now = Date.now();
+      const timeSinceLast = now - touchData.lastTapTime;
+
+      if (timeSinceLast < 300) {
+        handleDoubleTap();
+        touchData.lastTapTime = 0;
+      } else {
+        touchData.lastTapTime = now;
+        handleTouchTap(touch);
+      }
+    }
+
+    touchData.initialDistance = 0;
+  }
+
+  function handleLongPress(touch: Touch) {
+    if (!raycaster || !camera || !pointsMesh) return;
+
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(pointsMesh);
+
+    if (hits.length > 0 && hits[0].index !== undefined) {
+      const index = hits[0].index;
+      haptics.medium();
+
+      if (onPointClick) {
+        onPointClick(points[index]);
+      }
+    }
+  }
+
+  function handleDoubleTap() {
+    if (!camera || !controls) return;
+
+    haptics.light();
+
+    const startPos = camera.position.clone();
+    const targetPos = new THREE.Vector3(0, 0, 150);
+
+    const duration = 800;
+    const startTime = Date.now();
+
+    function animateReset() {
+      const now = Date.now();
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      camera.position.lerpVectors(startPos, targetPos, eased);
+      camera.lookAt(0, 0, 0);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateReset);
+      }
+    }
+
+    animateReset();
+  }
+
+  function handleTouchTap(touch: Touch) {
+    if (!raycaster || !camera || !pointsMesh) return;
+
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(pointsMesh);
+
+    if (hits.length > 0 && hits[0].index !== undefined) {
+      const index = hits[0].index;
+      haptics.light();
+
+      if (onPointClick) {
+        onPointClick(points[index]);
+      }
+    }
+  }
+
   onMount(() => {
     initScene();
     updateScenePoints();
     window.addEventListener('resize', onResize);
     container.addEventListener('mousemove', updateHover);
     container.addEventListener('mouseleave', handleMouseLeave);
+
+    // Touch event listeners
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
     animate();
   });
 
   onDestroy(() => {
     if (animationId !== null) cancelAnimationFrame(animationId);
+
+    // Clean up long-press timer
+    if (touchData.longPressTimer) {
+      clearTimeout(touchData.longPressTimer);
+    }
+
     window.removeEventListener('resize', onResize);
     container?.removeEventListener('mousemove', updateHover);
     container?.removeEventListener('mouseleave', handleMouseLeave);
+
+    // Remove touch listeners
+    container?.removeEventListener('touchstart', handleTouchStart);
+    container?.removeEventListener('touchmove', handleTouchMove);
+    container?.removeEventListener('touchend', handleTouchEnd);
 
     controls?.dispose();
     renderer?.dispose();
