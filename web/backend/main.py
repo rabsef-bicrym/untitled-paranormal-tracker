@@ -580,14 +580,14 @@ async def get_vector_space_points(
     with get_db_cursor() as cur:
         if type_filter:
             cur.execute("""
-                SELECT id::text, title, story_type, umap_x, umap_y
+                SELECT id::text, title, story_type, umap_x, umap_y, umap_z
                 FROM stories
                 WHERE umap_x IS NOT NULL AND umap_y IS NOT NULL
                   AND story_type = ANY(%s)
             """, (type_filter,))
         else:
             cur.execute("""
-                SELECT id::text, title, story_type, umap_x, umap_y
+                SELECT id::text, title, story_type, umap_x, umap_y, umap_z
                 FROM stories
                 WHERE umap_x IS NOT NULL AND umap_y IS NOT NULL
             """)
@@ -603,7 +603,7 @@ async def get_vector_space_points(
             story_type=row["story_type"],
             x=row["umap_x"],
             y=row["umap_y"],
-            z=0.0,  # 2D UMAP for now
+            z=row["umap_z"] or 0.0,
             color=color,
         ))
 

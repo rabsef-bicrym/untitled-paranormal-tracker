@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Load segment markdown files into the database with embeddings.
+Load segment markdown files into the database with embeddings and framework analysis.
 
-Reads .md files from segments/, parses frontmatter, generates embeddings
-via Voyage AI, and inserts into PostgreSQL.
+Reads .md files from segments/, parses frontmatter, runs parapsychology framework
+analysis via Anthropic, generates embeddings via Voyage AI, and inserts into PostgreSQL.
 
 For stories under the token limit: embed the full story.
 For longer stories: chunk, embed each chunk, mean-pool for story embedding.
@@ -32,6 +32,7 @@ from typing import Iterable
 
 import yaml
 
+from framework_analysis import analyze_story_frameworks, FRAMEWORK_SCHEMA_VERSION
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
@@ -45,6 +46,32 @@ MAX_TOKENS_FOR_FULL_EMBED = 4000  # Below this, embed full story
 CHUNK_SIZE_TOKENS = 500  # Approximate tokens per chunk
 CHUNK_OVERLAP_TOKENS = 50
 VOYAGE_API_URL = "https://api.voyageai.com/v1/embeddings"
+
+
+def ensure_framework_columns(conn) -> None:
+    with conn.cursor() as cur:
+        cur.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                              WHERE table_name='stories' AND column_name='frameworks_json') THEN
+                    ALTER TABLE stories ADD COLUMN frameworks_json JSONB;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                              WHERE table_name='stories' AND column_name='frameworks_version') THEN
+                    ALTER TABLE stories ADD COLUMN frameworks_version TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                              WHERE table_name='stories' AND column_name='frameworks_model') THEN
+                    ALTER TABLE stories ADD COLUMN frameworks_model TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                              WHERE table_name='stories' AND column_name='frameworks_computed_at') THEN
+                    ALTER TABLE stories ADD COLUMN frameworks_computed_at TIMESTAMPTZ;
+                END IF;
+            END $$;
+        """)
+    conn.commit()
 
 
 def get_database_url() -> str:
@@ -200,6 +227,9 @@ def load_segment_to_db(
     file_path: Path,
     conn,
     voyage_api_key: str,
+    anthropic_api_key: str | None,
+    anthropic_model: str | None,
+    frameworks_enabled: bool,
     dry_run: bool = False,
 ) -> dict:
     """
@@ -242,6 +272,18 @@ def load_segment_to_db(
             "tokens": token_count,
             "method": "full" if token_count < MAX_TOKENS_FOR_FULL_EMBED else "chunked",
         }
+
+    # Framework analysis (parapsychology)
+    frameworks_payload = None
+    frameworks_model = None
+    if frameworks_enabled:
+        result = analyze_story_frameworks(
+            body,
+            api_key=anthropic_api_key or "",
+            model=anthropic_model,
+        )
+        frameworks_payload = result.to_json()
+        frameworks_model = result.model
 
     # Generate embeddings
     if token_count < MAX_TOKENS_FOR_FULL_EMBED:
@@ -301,11 +343,28 @@ def load_segment_to_db(
                     token_count = %s,
                     embedding_method = %s,
                     embedding = %s,
+                    frameworks_json = COALESCE(%s::jsonb, frameworks_json),
+                    frameworks_version = COALESCE(%s, frameworks_version),
+                    frameworks_model = COALESCE(%s, frameworks_model),
+                    frameworks_computed_at = CASE WHEN %s THEN now() ELSE frameworks_computed_at END,
                     updated_at = now()
                 WHERE id = %s
                 """,
-                (body, end_time, story_type, location, is_first_person,
-                 token_count, embedding_method, embedding, story_id),
+                (
+                    body,
+                    end_time,
+                    story_type,
+                    location,
+                    is_first_person,
+                    token_count,
+                    embedding_method,
+                    embedding,
+                    json.dumps(frameworks_payload, ensure_ascii=True) if frameworks_payload else None,
+                    FRAMEWORK_SCHEMA_VERSION if frameworks_payload else None,
+                    frameworks_model,
+                    frameworks_payload is not None,
+                    story_id,
+                ),
             )
             action = "updated"
         else:
@@ -314,13 +373,29 @@ def load_segment_to_db(
                 """
                 INSERT INTO stories (
                     episode_id, title, content, start_time_seconds, end_time_seconds,
-                    story_type, location, is_first_person, token_count, embedding_method, embedding
+                    story_type, location, is_first_person, token_count, embedding_method, embedding,
+                    frameworks_json, frameworks_version, frameworks_model, frameworks_computed_at
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s)
                 RETURNING id
                 """,
-                (episode_id, title, body, start_time, end_time,
-                 story_type, location, is_first_person, token_count, embedding_method, embedding),
+                (
+                    episode_id,
+                    title,
+                    body,
+                    start_time,
+                    end_time,
+                    story_type,
+                    location,
+                    is_first_person,
+                    token_count,
+                    embedding_method,
+                    embedding,
+                    json.dumps(frameworks_payload, ensure_ascii=True) if frameworks_payload else None,
+                    FRAMEWORK_SCHEMA_VERSION if frameworks_payload else None,
+                    frameworks_model,
+                    datetime.utcnow() if frameworks_payload else None,
+                ),
             )
             story_id = cur.fetchone()[0]
             action = "inserted"
@@ -358,6 +433,8 @@ def main() -> int:
         epilog="""
 Environment:
   VOYAGE_API_KEY  - Voyage AI API key (required)
+  ANTHROPIC_API_KEY - Anthropic API key (required for framework analysis)
+  ANTHROPIC_MODEL   - Anthropic model override (default: claude-3-haiku-20240307)
   DATABASE_URL    - PostgreSQL URL
                     (default: postgresql://paranormal:paranormal@localhost:5433/paranormal_tracker)
 
@@ -409,6 +486,17 @@ Examples:
         default=1.0,
         help="Delay between files in seconds (default: 1.0, helps with rate limits)",
     )
+    parser.add_argument(
+        "--no-frameworks",
+        action="store_true",
+        help="Skip parapsychology framework analysis",
+    )
+    parser.add_argument(
+        "--framework-model",
+        type=str,
+        default=None,
+        help="Anthropic model override (defaults to ANTHROPIC_MODEL env)",
+    )
 
     args = parser.parse_args()
 
@@ -426,6 +514,12 @@ Examples:
         print("VOYAGE_API_KEY environment variable required", file=sys.stderr)
         return 1
 
+    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
+    frameworks_enabled = not args.no_frameworks
+    if not args.dry_run and frameworks_enabled and not anthropic_api_key:
+        print("ANTHROPIC_API_KEY environment variable required for framework analysis", file=sys.stderr)
+        return 1
+
     if not args.dry_run:
         try:
             conn = psycopg2.connect(database_url)
@@ -434,6 +528,9 @@ Examples:
             return 1
     else:
         conn = None
+
+    if conn and frameworks_enabled:
+        ensure_framework_columns(conn)
 
     # Collect files
     if args.file:
@@ -465,7 +562,15 @@ Examples:
 
     for i, file_path in enumerate(files):
         try:
-            result = load_segment_to_db(file_path, conn, voyage_api_key, dry_run=args.dry_run)
+            result = load_segment_to_db(
+                file_path,
+                conn,
+                voyage_api_key,
+                anthropic_api_key,
+                args.framework_model,
+                frameworks_enabled,
+                dry_run=args.dry_run,
+            )
 
             if result["status"] in ("inserted", "updated", "would_load"):
                 loaded += 1

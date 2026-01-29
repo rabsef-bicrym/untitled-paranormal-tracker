@@ -1,8 +1,13 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import * as THREE from 'three';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+  import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+  import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+  import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
   import type { VectorPoint } from '$lib/api';
-  import { getStoryTypeColor, formatStoryType } from '$lib/stores';
+  import { formatStoryType, getStoryTypeColor } from '$lib/stores';
+  import { createGlowTexture, createNebulaTexture } from '$lib/three/textures';
 
   interface Props {
     points: VectorPoint[];
@@ -13,283 +18,385 @@
 
   let container: HTMLDivElement;
   let renderer: THREE.WebGLRenderer | null = null;
+  let composer: EffectComposer | null = null;
   let scene: THREE.Scene | null = null;
   let camera: THREE.PerspectiveCamera | null = null;
+  let controls: OrbitControls | null = null;
   let pointsMesh: THREE.Points | null = null;
+  let haloMesh: THREE.Points | null = null;
+  let wireframe: THREE.LineSegments | null = null;
+  let hoverMarker: THREE.Mesh | null = null;
   let raycaster: THREE.Raycaster | null = null;
-  let mouse: THREE.Vector2 | null = null;
   let animationId: number | null = null;
-  let isDragging = false;
-  let previousMouse = { x: 0, y: 0 };
-  let rotation = { x: 0, y: 0 };
-  let zoom = 50;
-
-  let tooltip: { x: number; y: number; point: VectorPoint } | null = $state(null);
   let hoveredIndex: number | null = null;
+  let tooltip: { x: number; y: number; point: VectorPoint } | null = $state(null);
 
-  // Normalize UMAP coordinates to scene space
-  function normalizeCoords(points: VectorPoint[]): { x: number; y: number; z: number }[] {
-    if (points.length === 0) return [];
+  const SPACE_SCALE = 80;
+  const clock = new THREE.Clock();
+  const mouse = new THREE.Vector2();
+  let pointPositions: THREE.Vector3[] = [];
+  let glowTexture: THREE.Texture | null = null;
+  let nebulaTexture: THREE.Texture | null = null;
 
-    const xs = points.map(p => p.x);
-    const ys = points.map(p => p.y);
+  function normalizeCoords(pts: VectorPoint[]) {
+    if (pts.length === 0) return [];
+    const xs = pts.map(p => p.x);
+    const ys = pts.map(p => p.y);
+    const zs = pts.map(p => p.z);
 
     const minX = Math.min(...xs);
     const maxX = Math.max(...xs);
     const minY = Math.min(...ys);
     const maxY = Math.max(...ys);
+    const minZ = Math.min(...zs);
+    const maxZ = Math.max(...zs);
 
     const rangeX = maxX - minX || 1;
     const rangeY = maxY - minY || 1;
-    const scale = 40; // Scene units
+    const rangeZ = maxZ - minZ || 1;
 
-    return points.map(p => ({
-      x: ((p.x - minX) / rangeX - 0.5) * scale,
-      y: ((p.y - minY) / rangeY - 0.5) * scale,
-      z: (Math.random() - 0.5) * 5, // Add slight z variation for depth
+    return pts.map(p => ({
+      x: ((p.x - minX) / rangeX - 0.5) * SPACE_SCALE,
+      y: ((p.y - minY) / rangeY - 0.5) * SPACE_SCALE,
+      z: ((p.z - minZ) / rangeZ - 0.5) * SPACE_SCALE,
     }));
   }
 
-  onMount(() => {
-    // Initialize Three.js scene
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0f0f1a);
-
-    camera = new THREE.PerspectiveCamera(
-      60,
-      container.clientWidth / container.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.z = zoom;
-
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-
-    raycaster = new THREE.Raycaster();
-    raycaster.params.Points = { threshold: 0.5 };
-    mouse = new THREE.Vector2();
-
-    // Add grid helper
-    const gridHelper = new THREE.GridHelper(50, 50, 0x333333, 0x222222);
-    gridHelper.rotation.x = Math.PI / 2;
-    scene.add(gridHelper);
-
-    // Add ambient light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    updatePoints();
-
-    // Event listeners
-    container.addEventListener('mousedown', onMouseDown);
-    container.addEventListener('mousemove', onMouseMove);
-    container.addEventListener('mouseup', onMouseUp);
-    container.addEventListener('mouseleave', onMouseUp);
-    container.addEventListener('wheel', onWheel);
-    window.addEventListener('resize', onResize);
-
-    // Animation loop
-    animate();
-  });
-
-  onDestroy(() => {
-    if (animationId !== null) {
-      cancelAnimationFrame(animationId);
-    }
-    if (renderer) {
-      renderer.dispose();
-      container?.removeChild(renderer.domElement);
-    }
-    container?.removeEventListener('mousedown', onMouseDown);
-    container?.removeEventListener('mousemove', onMouseMove);
-    container?.removeEventListener('mouseup', onMouseUp);
-    container?.removeEventListener('mouseleave', onMouseUp);
-    container?.removeEventListener('wheel', onWheel);
-    window.removeEventListener('resize', onResize);
-  });
-
-  function updatePoints() {
+  function buildSpace() {
     if (!scene) return;
 
-    // Remove old points
     if (pointsMesh) {
       scene.remove(pointsMesh);
       pointsMesh.geometry.dispose();
       (pointsMesh.material as THREE.Material).dispose();
     }
+    if (haloMesh) {
+      scene.remove(haloMesh);
+      haloMesh.geometry.dispose();
+      (haloMesh.material as THREE.Material).dispose();
+    }
 
     if (points.length === 0) return;
 
-    const normalizedCoords = normalizeCoords(points);
-    const geometry = new THREE.BufferGeometry();
+    pointPositions = [];
+    const normalized = normalizeCoords(points);
     const positions: number[] = [];
     const colors: number[] = [];
 
-    normalizedCoords.forEach((coord, i) => {
+    normalized.forEach((coord, index) => {
       positions.push(coord.x, coord.y, coord.z);
-
-      const hex = points[i].color || getStoryTypeColor(points[i].story_type);
-      const r = parseInt(hex.slice(1, 3), 16) / 255;
-      const g = parseInt(hex.slice(3, 5), 16) / 255;
-      const b = parseInt(hex.slice(5, 7), 16) / 255;
-      colors.push(r, g, b);
+      const hex = points[index].color || getStoryTypeColor(points[index].story_type);
+      const color = new THREE.Color(hex);
+      colors.push(color.r, color.g, color.b);
+      pointPositions.push(new THREE.Vector3(coord.x, coord.y, coord.z));
     });
 
+    const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-    const material = new THREE.PointsMaterial({
-      size: 0.8,
+    const coreMaterial = new THREE.PointsMaterial({
+      size: 1.6,
       vertexColors: true,
       transparent: true,
-      opacity: 0.9,
-      sizeAttenuation: true,
+      opacity: 1.0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
     });
 
-    pointsMesh = new THREE.Points(geometry, material);
+    pointsMesh = new THREE.Points(geometry, coreMaterial);
     scene.add(pointsMesh);
-  }
 
-  function animate() {
-    animationId = requestAnimationFrame(animate);
+    const haloGeometry = new THREE.BufferGeometry();
+    haloGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    haloGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-    if (scene && camera && renderer && pointsMesh) {
-      // Apply rotation
-      pointsMesh.rotation.x = rotation.x;
-      pointsMesh.rotation.y = rotation.y;
-
-      // Auto-rotate slightly when not interacting
-      if (!isDragging) {
-        rotation.y += 0.001;
-      }
-
-      renderer.render(scene, camera);
+    if (!glowTexture) {
+      glowTexture = createGlowTexture();
     }
+    const haloMaterial = new THREE.PointsMaterial({
+      size: 6.4,
+      map: glowTexture || undefined,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: false,
+    });
+
+    haloMesh = new THREE.Points(haloGeometry, haloMaterial);
+    scene.add(haloMesh);
   }
 
-  function onMouseDown(e: MouseEvent) {
-    isDragging = true;
-    previousMouse = { x: e.clientX, y: e.clientY };
-  }
-
-  function onMouseMove(e: MouseEvent) {
-    if (isDragging) {
-      const deltaX = e.clientX - previousMouse.x;
-      const deltaY = e.clientY - previousMouse.y;
-      rotation.y += deltaX * 0.005;
-      rotation.x += deltaY * 0.005;
-      previousMouse = { x: e.clientX, y: e.clientY };
-      tooltip = null;
-    } else {
-      // Check for hover
-      checkHover(e);
+  function buildWireframe() {
+    if (!scene) return;
+    if (wireframe) {
+      scene.remove(wireframe);
+      wireframe.geometry.dispose();
+      (wireframe.material as THREE.Material).dispose();
     }
+
+    const geometry = new THREE.BoxGeometry(SPACE_SCALE * 1.05, SPACE_SCALE * 1.05, SPACE_SCALE * 1.05);
+    const edges = new THREE.EdgesGeometry(geometry);
+    const material = new THREE.LineBasicMaterial({ color: 0x5eead4, transparent: true, opacity: 0.25 });
+    wireframe = new THREE.LineSegments(edges, material);
+    scene.add(wireframe);
   }
 
-  function onMouseUp() {
-    isDragging = false;
-  }
-
-  function onWheel(e: WheelEvent) {
-    e.preventDefault();
-    zoom += e.deltaY * 0.05;
-    zoom = Math.max(20, Math.min(150, zoom));
-    if (camera) {
-      camera.position.z = zoom;
+  function buildHoverMarker() {
+    if (!scene) return;
+    if (hoverMarker) {
+      scene.remove(hoverMarker);
+      hoverMarker.geometry.dispose();
+      (hoverMarker.material as THREE.Material).dispose();
     }
+    const geometry = new THREE.RingGeometry(1.6, 2.4, 32);
+    const material = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.0,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+    });
+    hoverMarker = new THREE.Mesh(geometry, material);
+    hoverMarker.visible = false;
+    scene.add(hoverMarker);
+  }
+
+  function initScene() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color('#060b1a');
+    scene.fog = new THREE.FogExp2(0x060b1a, 0.009);
+
+    camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 600);
+    camera.position.set(0, 40, 140);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    container.appendChild(renderer.domElement);
+
+    composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(container.clientWidth, container.clientHeight),
+      1.5,
+      0.4,
+      0.1
+    );
+    composer.addPass(bloomPass);
+
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.minDistance = 70;
+    controls.maxDistance = 220;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.4;
+
+    raycaster = new THREE.Raycaster();
+    raycaster.params.Points = { threshold: 1.2 };
+
+    const ambient = new THREE.AmbientLight(0xbfe8ff, 0.55);
+    scene.add(ambient);
+
+    const hemi = new THREE.HemisphereLight(0x5eead4, 0x020617, 0.35);
+    scene.add(hemi);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    keyLight.position.set(30, 60, 40);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.PointLight(0x5eead4, 1.7, 240);
+    rimLight.position.set(-40, -20, -40);
+    scene.add(rimLight);
+
+    if (!nebulaTexture) {
+      nebulaTexture = createNebulaTexture();
+    }
+    if (nebulaTexture) {
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(220, 32, 32),
+        new THREE.MeshBasicMaterial({ map: nebulaTexture, side: THREE.BackSide, transparent: true, opacity: 0.9 })
+      );
+      scene.add(sphere);
+    }
+
+    buildWireframe();
+    buildHoverMarker();
+  }
+
+  function updateScenePoints() {
+    if (!scene) return;
+    buildSpace();
   }
 
   function onResize() {
-    if (!camera || !renderer) return;
+    if (!renderer || !camera || !composer) return;
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
+    composer.setSize(container.clientWidth, container.clientHeight);
   }
 
-  function checkHover(e: MouseEvent) {
-    if (!raycaster || !mouse || !camera || !pointsMesh) return;
-
+  function updateHover(event: MouseEvent) {
+    if (!raycaster || !camera || !pointsMesh || !hoverMarker) return;
     const rect = container.getBoundingClientRect();
-    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(pointsMesh);
 
-    if (intersects.length > 0) {
-      const index = intersects[0].index;
-      if (index !== undefined && index < points.length) {
-        hoveredIndex = index;
-        tooltip = { x: e.clientX - rect.left, y: e.clientY - rect.top, point: points[index] };
-        container.style.cursor = 'pointer';
-      }
+    const hits = raycaster.intersectObject(pointsMesh);
+    if (hits.length > 0 && hits[0].index !== undefined) {
+      hoveredIndex = hits[0].index;
+      const point = points[hoveredIndex];
+      tooltip = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        point,
+      };
+      container.style.cursor = 'pointer';
+
+      const pos = pointPositions[hoveredIndex];
+      hoverMarker.visible = true;
+      hoverMarker.position.copy(pos);
+      const hoverMaterial = hoverMarker.material as THREE.MeshBasicMaterial;
+      hoverMaterial.opacity = 0.85;
+      const hoverHex = point.color || getStoryTypeColor(point.story_type);
+      hoverMaterial.color.set(hoverHex);
     } else {
       hoveredIndex = null;
       tooltip = null;
       container.style.cursor = 'grab';
+      hoverMarker.visible = false;
     }
   }
 
-  function handleClick(e: MouseEvent) {
-    if (isDragging) return;
-    checkHover(e);
+  function handleClick() {
     if (hoveredIndex !== null && onPointClick) {
       onPointClick(points[hoveredIndex]);
     }
   }
 
-  $effect(() => {
-    if (points) {
-      updatePoints();
+  function handleMouseLeave() {
+    tooltip = null;
+    hoveredIndex = null;
+    if (hoverMarker) hoverMarker.visible = false;
+    container.style.cursor = 'grab';
+  }
+
+  function animate() {
+    animationId = requestAnimationFrame(animate);
+    if (!scene || !camera || !composer) return;
+
+    const elapsed = clock.getElapsedTime();
+    if (controls) controls.update();
+
+    if (haloMesh) {
+      const material = haloMesh.material as THREE.PointsMaterial;
+      material.size = 5.1 + Math.sin(elapsed * 1.4) * 0.6;
     }
+
+    if (hoverMarker && hoverMarker.visible) {
+      const pulse = 1 + Math.sin(elapsed * 5) * 0.22;
+      hoverMarker.scale.set(pulse, pulse, pulse);
+      hoverMarker.lookAt(camera.position);
+    }
+
+    composer.render();
+  }
+
+  onMount(() => {
+    initScene();
+    updateScenePoints();
+    window.addEventListener('resize', onResize);
+    container.addEventListener('mousemove', updateHover);
+    container.addEventListener('mouseleave', handleMouseLeave);
+    animate();
+  });
+
+  onDestroy(() => {
+    if (animationId !== null) cancelAnimationFrame(animationId);
+    window.removeEventListener('resize', onResize);
+    container?.removeEventListener('mousemove', updateHover);
+    container?.removeEventListener('mouseleave', handleMouseLeave);
+
+    controls?.dispose();
+    renderer?.dispose();
+    composer?.dispose();
+
+    if (pointsMesh) {
+      pointsMesh.geometry.dispose();
+      (pointsMesh.material as THREE.Material).dispose();
+    }
+    if (haloMesh) {
+      haloMesh.geometry.dispose();
+      (haloMesh.material as THREE.Material).dispose();
+    }
+    if (wireframe) {
+      wireframe.geometry.dispose();
+      (wireframe.material as THREE.Material).dispose();
+    }
+    if (hoverMarker) {
+      hoverMarker.geometry.dispose();
+      (hoverMarker.material as THREE.Material).dispose();
+    }
+
+    glowTexture?.dispose();
+    nebulaTexture?.dispose();
+
+    if (renderer && renderer.domElement && renderer.domElement.parentNode) {
+      renderer.domElement.parentNode.removeChild(renderer.domElement);
+    }
+  });
+
+  $effect(() => {
+    if (scene) updateScenePoints();
   });
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-  class="relative w-full h-full cursor-grab"
-  bind:this={container}
-  onclick={handleClick}
->
-  {#if tooltip}
-    <div
-      class="absolute z-10 px-3 py-2 bg-[#1a1a2e] border border-gray-700 rounded-lg shadow-lg pointer-events-none"
-      style="left: {tooltip.x + 10}px; top: {tooltip.y + 10}px; max-width: 300px;"
-    >
-      <div class="font-medium text-white text-sm">{tooltip.point.title}</div>
-      {#if tooltip.point.story_type}
-        <div class="flex items-center gap-2 mt-1">
-          <span
-            class="w-2 h-2 rounded-full"
-            style="background-color: {getStoryTypeColor(tooltip.point.story_type)}"
-          ></span>
-          <span class="text-xs text-gray-400">{formatStoryType(tooltip.point.story_type)}</span>
+<div class="relative w-full h-full" bind:this={container} onclick={handleClick}>
+  {#if points.length === 0}
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="text-center px-8 max-w-sm">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/50 flex items-center justify-center">
+          <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
+          </svg>
         </div>
-      {/if}
+        <h2 class="text-lg font-semibold text-slate-200 mb-2">Vector Space</h2>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          Semantic embeddings haven't been generated yet. Once computed, you'll be able to explore stories in 3D space where similar experiences cluster together.
+        </p>
+      </div>
     </div>
+  {:else}
+    <div class="absolute bottom-4 left-4 px-3 py-2 bg-slate-950/80 backdrop-blur-md rounded-lg border border-teal-300/30 text-xs text-teal-100 shadow-[0_0_20px_rgba(94,234,212,0.25)]">
+      Drag to orbit - Scroll to zoom - Click to inspect
+    </div>
+
+    {#if tooltip}
+      <div
+        class="absolute z-10 px-3 py-2 bg-slate-950/90 backdrop-blur-md border border-teal-300/40 rounded-lg shadow-[0_0_24px_rgba(45,212,191,0.35)] pointer-events-none max-w-[280px]"
+        style="left: {tooltip.x + 12}px; top: {tooltip.y + 12}px;"
+      >
+        <div class="font-medium text-sm text-white">{tooltip.point.title}</div>
+        {#if tooltip.point.story_type}
+          <div class="flex items-center gap-1.5 mt-1">
+            <span
+              class="w-2 h-2 rounded-full"
+              style="background-color: {getStoryTypeColor(tooltip.point.story_type)}"
+            ></span>
+            <span class="text-xs text-teal-100">{formatStoryType(tooltip.point.story_type)}</span>
+          </div>
+        {/if}
+      </div>
+    {/if}
   {/if}
-
-  <!-- Legend -->
-  <div class="absolute bottom-4 left-4 bg-[#1a1a2e]/90 border border-gray-700 rounded-lg p-3 z-10">
-    <div class="text-xs text-gray-400 mb-2">Story Types</div>
-    <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-      {#each Object.entries({ ghost: '#9b59b6', shadow_person: '#2c3e50', ufo: '#3498db', alien_encounter: '#1abc9c', cryptid: '#27ae60', haunting: '#8e44ad' }) as [type, color]}
-        <div class="flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full" style="background-color: {color}"></span>
-          <span class="text-gray-300">{formatStoryType(type)}</span>
-        </div>
-      {/each}
-    </div>
-  </div>
-
-  <!-- Instructions -->
-  <div class="absolute top-4 right-4 bg-[#1a1a2e]/90 border border-gray-700 rounded-lg p-3 z-10 text-xs text-gray-400">
-    <div>Drag to rotate</div>
-    <div>Scroll to zoom</div>
-    <div>Click to select</div>
-  </div>
 </div>

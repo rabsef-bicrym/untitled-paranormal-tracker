@@ -1,42 +1,68 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Oxanium:wght@300;400;500;600&family=Share+Tech+Mono&display=swap');
+@import "tailwindcss";
 
 :root {
-  --color-bg: #0f0f1a;
-  --color-bg-secondary: #1a1a2e;
-  --color-text: #e0e0e0;
-  --color-text-muted: #888;
-  --color-accent: #9b59b6;
-  --color-border: #333;
+  --ink: #05070f;
+  --surface: #0a0f2b;
+  --panel: #121633;
+  --glow: #38bdf8;
+  --glow-strong: #f472b6;
+  --accent-warm: #f59e0b;
+  --text-primary: #e2e8f0;
+  --text-muted: #94a3b8;
+  background-color: var(--ink);
+  color: var(--text-primary);
 }
 
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: system-ui, -apple-system, sans-serif;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.25), transparent 45%),
+    radial-gradient(circle at 80% 15%, rgba(217, 70, 239, 0.35), transparent 50%),
+    linear-gradient(180deg, #04030a 0%, #0a0820 50%, #120a2f 100%);
+  color: var(--text-primary);
+  font-family: 'Oxanium', 'Orbitron', 'Share Tech Mono', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+.scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.08) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    rgba(0, 0, 0, 0) 3px,
+    rgba(0, 0, 0, 0) 6px
+  );
+  mix-blend-mode: screen;
+  opacity: 0.35;
+}
+
+/* Prevent pull-to-refresh on mobile */
+body {
+  overflow: hidden;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 4px;
+  background: #334155;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  background: #475569;
 }
 
 /* MapLibre overrides */
@@ -44,15 +70,33 @@ html, body {
   outline: none;
 }
 
-.maplibregl-popup-content {
-  background: var(--color-bg-secondary) !important;
-  color: var(--color-text) !important;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 12px;
-  max-width: 300px;
+/* Touch-friendly tap targets */
+@media (pointer: coarse) {
+  button, a, input, select {
+    min-height: 44px;
+  }
 }
 
-.maplibregl-popup-tip {
-  border-top-color: var(--color-bg-secondary) !important;
+/* Dynamic viewport height support */
+@supports not (height: 100dvh) {
+  .h-screen {
+    height: 100vh;
+  }
+}
+
+@supports (height: 100dvh) {
+  .h-screen {
+    height: 100dvh;
+  }
+}
+
+/* Utility classes for dvh */
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.max-h-screen {
+  max-height: 100vh;
+  max-height: 100dvh;
 }

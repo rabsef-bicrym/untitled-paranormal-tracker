@@ -112,15 +112,15 @@ def run_umap_clustering(embeddings, n_neighbors=15, min_dist=0.0, n_components=5
 
 def run_umap_viz(embeddings, n_neighbors=15, min_dist=0.1):
     """
-    Reduce to 2D for visualization.
+    Reduce to 3D for visualization.
 
     Slightly higher min_dist (0.1) spreads points for better visual clarity.
     """
-    print(f"\nRunning UMAP for visualization (2D)...")
+    print(f"\nRunning UMAP for visualization (3D)...")
 
     reducer = umap.UMAP(
         n_neighbors=n_neighbors,
-        n_components=2,
+        n_components=3,
         min_dist=min_dist,
         metric='cosine',
         random_state=42,
@@ -679,6 +679,10 @@ def update_database(ids, umap_coords_2d, cluster_labels):
                 ALTER TABLE stories ADD COLUMN umap_y FLOAT;
             END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                          WHERE table_name='stories' AND column_name='umap_z') THEN
+                ALTER TABLE stories ADD COLUMN umap_z FLOAT;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns
                           WHERE table_name='stories' AND column_name='cluster_id') THEN
                 ALTER TABLE stories ADD COLUMN cluster_id INTEGER;
             END IF;
@@ -690,6 +694,7 @@ def update_database(ids, umap_coords_2d, cluster_labels):
         (
             float(umap_coords_2d[i, 0]),
             float(umap_coords_2d[i, 1]),
+            float(umap_coords_2d[i, 2]),
             int(cluster_labels[i]) if cluster_labels[i] >= 0 else None,
             ids[i]
         )
@@ -698,7 +703,7 @@ def update_database(ids, umap_coords_2d, cluster_labels):
 
     cur.executemany("""
         UPDATE stories
-        SET umap_x = %s, umap_y = %s, cluster_id = %s
+        SET umap_x = %s, umap_y = %s, umap_z = %s, cluster_id = %s
         WHERE id = %s
     """, data)
 

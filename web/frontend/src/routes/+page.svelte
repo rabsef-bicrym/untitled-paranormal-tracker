@@ -7,8 +7,10 @@
     selectedFrameworkCategory,
     selectedStoryType,
     searchQuery,
+    frameworks,
+    storyTypes,
   } from '$lib/stores';
-  import USMap from '$lib/components/USMap.svelte';
+  import RetroMap from '$lib/components/RetroMap.svelte';
   import VectorSpace from '$lib/components/VectorSpace.svelte';
   import FilterSidebar from '$lib/components/FilterSidebar.svelte';
   import StoryList from '$lib/components/StoryList.svelte';
@@ -68,7 +70,20 @@
   }
 
   // Load data on mount and when filters change
-  onMount(() => {
+  onMount(async () => {
+    // Load frameworks and story types first
+    try {
+      const [fwData, typesData] = await Promise.all([
+        api.getFrameworks(),
+        api.getStoryTypes(),
+      ]);
+      frameworks.set(fwData);
+      storyTypes.set(typesData);
+    } catch (err) {
+      console.error('Failed to load metadata:', err);
+    }
+
+    // Then load story data
     loadData();
   });
 
@@ -116,14 +131,14 @@
   }
 </script>
 
-<div class="flex h-[calc(100vh-4rem)]">
-  <!-- Sidebar -->
+<div class="flex flex-col lg:flex-row h-full">
+  <!-- Sidebar (drawer on mobile, fixed on desktop) -->
   <FilterSidebar storyCount={getDisplayCount()} />
 
   <!-- Main content area -->
-  <div class="flex-1 relative">
+  <div class="flex-1 relative overflow-hidden">
     {#if $viewMode === 'map'}
-      <USMap stories={mapStories} onStoryClick={handleStoryClick} />
+      <RetroMap stories={mapStories} onStoryClick={handleStoryClick} />
     {:else if $viewMode === 'vector'}
       <VectorSpace points={vectorPoints} onPointClick={handleStoryClick} />
     {:else if $viewMode === 'list'}
@@ -136,25 +151,54 @@
 
     <!-- Loading overlay -->
     {#if loading && $viewMode !== 'list'}
-      <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
         <div class="text-white">Loading...</div>
       </div>
     {/if}
   </div>
 
-  <!-- Search results panel (overlay on map/vector views) -->
+  <!-- Search results panel (responsive positioning) -->
   {#if $searchQuery.trim() && $viewMode !== 'list' && searchResults.length > 0}
-    <div class="absolute right-0 top-16 bottom-0 w-80 bg-[#1a1a2e]/95 border-l border-gray-800 z-10">
-      <div class="p-3 border-b border-gray-800">
+    <div class="
+      fixed lg:absolute
+      bottom-0 lg:bottom-auto lg:right-0 lg:top-0
+      left-0 right-0 lg:left-auto
+      h-[80vh] lg:h-full
+      w-full lg:w-80 max-w-full lg:max-w-[480px]
+      bg-[#1a1a2e]/95 backdrop-blur
+      border-t lg:border-t-0 lg:border-l border-gray-800
+      z-30
+      overflow-y-auto
+      rounded-t-2xl lg:rounded-none
+    ">
+      <!-- Drag handle (mobile only) -->
+      <div class="lg:hidden flex justify-center pt-2 pb-1">
+        <div class="w-12 h-1 bg-gray-600 rounded-full"></div>
+      </div>
+
+      <div class="p-3 border-b border-gray-800 sticky top-0 bg-[#1a1a2e]">
         <h3 class="text-sm font-medium text-white">
           Search Results ({searchResults.length})
         </h3>
       </div>
-      <StoryList
-        stories={searchResults}
-        onStoryClick={handleStoryClick}
-        {loading}
-      />
+      <div class="divide-y divide-gray-800">
+        {#each searchResults as result}
+          <button
+            onclick={() => handleStoryClick(result)}
+            class="w-full text-left p-3 hover:bg-white/5 transition-colors"
+          >
+            <div class="text-sm font-medium text-white mb-1">{result.title}</div>
+            {#if result.snippet}
+              <div class="text-xs text-gray-400 line-clamp-2">{result.snippet}</div>
+            {/if}
+            {#if result.score}
+              <div class="text-xs text-cyan-400 mt-1">
+                Score: {(result.score * 100).toFixed(0)}%
+              </div>
+            {/if}
+          </button>
+        {/each}
+      </div>
     </div>
   {/if}
 </div>

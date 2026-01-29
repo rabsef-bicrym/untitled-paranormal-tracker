@@ -59,21 +59,21 @@ export const filteredStoryTypes = derived(
 
 // Story type color mapping
 export const storyTypeColors: Record<string, string> = {
-  ghost: '#9b59b6',
-  shadow_person: '#2c3e50',
-  cryptid: '#27ae60',
-  ufo: '#3498db',
-  alien_encounter: '#1abc9c',
-  haunting: '#8e44ad',
-  poltergeist: '#e74c3c',
-  precognition: '#f39c12',
-  nde: '#e67e22',
-  obe: '#16a085',
-  time_slip: '#2980b9',
-  doppelganger: '#c0392b',
-  sleep_paralysis: '#7f8c8d',
-  possession: '#d35400',
-  other: '#95a5a6',
+  ghost: '#F472B6', // Pink 400
+  shadow_person: '#A78BFA', // Violet 400
+  cryptid: '#34D399', // Emerald 400
+  ufo: '#60A5FA', // Blue 400
+  alien_encounter: '#2DD4BF', // Teal 400
+  haunting: '#E879F9', // Fuchsia 400
+  poltergeist: '#FB7185', // Rose 400
+  precognition: '#FBBF24', // Amber 400
+  nde: '#FB923C', // Orange 400
+  obe: '#22D3EE', // Cyan 400
+  time_slip: '#818CF8', // Indigo 400
+  doppelganger: '#F87171', // Red 400
+  sleep_paralysis: '#94A3B8', // Slate 400
+  possession: '#EF4444', // Red 500
+  other: '#CBD5E1', // Slate 300
 };
 
 export function getStoryTypeColor(type: string | undefined): string {

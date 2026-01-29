@@ -9,7 +9,7 @@
     filteredStoryTypes,
     getStoryTypeColor,
     formatStoryType,
-    sidebarOpen
+    sidebarOpen,
   } from '$lib/stores';
 
   interface Props {
@@ -32,131 +32,142 @@
   function selectType(type: string | null) {
     selectedStoryType.set(type);
   }
+
+  function closeSidebar() {
+    sidebarOpen.set(false);
+  }
+
+  function handleBackdropClick() {
+    closeSidebar();
+  }
 </script>
 
-<aside class="w-64 bg-[#1a1a2e] border-r border-gray-800 h-full overflow-y-auto">
-  <div class="p-4">
-    <!-- Close button (mobile only) -->
-    <div class="md:hidden flex items-center justify-between mb-4 -mt-1">
-      <h2 class="text-lg font-semibold text-white">Filters</h2>
+<!-- Backdrop overlay (mobile only) -->
+{#if $sidebarOpen}
+  <button
+    onclick={handleBackdropClick}
+    class="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+    aria-label="Close sidebar"
+  ></button>
+{/if}
+
+<!-- Sidebar -->
+<aside
+  class="
+    fixed lg:static top-0 bottom-0 left-0 z-50
+    w-[85vw] max-w-[384px] lg:w-64
+    bg-slate-900 border-r border-slate-800
+    overflow-y-auto
+    transition-transform duration-300
+    {$sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+  "
+>
+  <!-- Mobile close button -->
+  <div class="lg:hidden sticky top-0 bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between z-10">
+    <h2 class="text-lg font-bold text-white font-['Orbitron']">Filters</h2>
+    <button
+      onclick={closeSidebar}
+      class="p-2 hover:bg-white/5 rounded transition-colors"
+      aria-label="Close filters"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="p-4 space-y-6">
+  <!-- Story count -->
+  <div>
+    <div class="text-3xl font-bold text-white tabular-nums">{storyCount}</div>
+    <div class="text-sm text-slate-500">stories displayed</div>
+  </div>
+
+  <!-- Frameworks -->
+  <div>
+    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+      Frameworks
+    </h3>
+    <div class="space-y-0.5">
       <button
-        class="p-2.5 -mr-2.5 text-gray-400 hover:text-white active:text-purple-400"
-        onclick={() => sidebarOpen.set(false)}
-        aria-label="Close filters"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors {!$selectedFramework ? 'bg-violet-600 text-white' : 'text-slate-300 hover:bg-slate-800'}"
+        onclick={() => selectFramework(null)}
       >
-        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        All Stories
       </button>
-    </div>
-
-    <!-- Story count -->
-    <div class="mb-6">
-      <div class="text-2xl font-bold text-white">{storyCount}</div>
-      <div class="text-sm text-gray-500">stories displayed</div>
-    </div>
-
-    <!-- Frameworks -->
-    <div class="mb-6">
-      <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-        Frameworks
-      </h3>
-      <div class="space-y-1">
+      {#each Object.entries($frameworks) as [key, fw]}
         <button
-          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors"
-          class:bg-purple-600={!$selectedFramework}
-          class:text-white={!$selectedFramework}
-          class:text-gray-300={$selectedFramework}
-          class:hover:bg-gray-800={$selectedFramework}
-          onclick={() => selectFramework(null)}
+          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors {$selectedFramework === key ? 'bg-violet-600 text-white' : 'text-slate-300 hover:bg-slate-800'}"
+          onclick={() => selectFramework(key)}
         >
-          All Stories
+          {fw.name}
         </button>
-        {#each Object.entries($frameworks) as [key, fw]}
+      {/each}
+    </div>
+  </div>
+
+  <!-- Framework Categories -->
+  {#if $selectedFramework && $frameworkCategories.length > 0}
+    <div>
+      <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+        Categories
+      </h3>
+      <div class="space-y-0.5">
+        <button
+          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors {!$selectedFrameworkCategory ? 'bg-violet-500/50 text-white' : 'text-slate-300 hover:bg-slate-800'}"
+          onclick={() => selectCategory(null)}
+        >
+          All in {$frameworks[$selectedFramework]?.name}
+        </button>
+        {#each $frameworkCategories as category}
           <button
-            class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors"
-            class:bg-purple-600={$selectedFramework === key}
-            class:text-white={$selectedFramework === key}
-            class:text-gray-300={$selectedFramework !== key}
-            class:hover:bg-gray-800={$selectedFramework !== key}
-            onclick={() => selectFramework(key)}
+            class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors capitalize {$selectedFrameworkCategory === category ? 'bg-violet-500/50 text-white' : 'text-slate-300 hover:bg-slate-800'}"
+            onclick={() => selectCategory(category)}
           >
-            {fw.name}
+            {category.replace(/_/g, ' ')}
           </button>
         {/each}
       </div>
     </div>
+  {/if}
 
-    <!-- Framework Categories (when a framework is selected) -->
-    {#if $selectedFramework && $frameworkCategories.length > 0}
-      <div class="mb-6">
-        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          Categories
-        </h3>
-        <div class="space-y-1">
+  <!-- Story Types -->
+  <div>
+    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+      Story Types
+    </h3>
+    <div class="space-y-0.5">
+      {#if $selectedFramework}
+        {#each $filteredStoryTypes as type}
           <button
-            class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors {!$selectedFrameworkCategory ? 'bg-purple-500 bg-opacity-50 text-white' : 'text-gray-300 hover:bg-gray-800'}"
-            onclick={() => selectCategory(null)}
+            class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 {$selectedStoryType === type ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-800'}"
+            onclick={() => selectType($selectedStoryType === type ? null : type)}
           >
-            All in {$frameworks[$selectedFramework]?.name}
+            <span
+              class="w-2.5 h-2.5 rounded-full shrink-0"
+              style="background-color: {getStoryTypeColor(type)}"
+            ></span>
+            {formatStoryType(type)}
           </button>
-          {#each $frameworkCategories as category}
-            <button
-              class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors capitalize {$selectedFrameworkCategory === category ? 'bg-purple-500 bg-opacity-50 text-white' : 'text-gray-300 hover:bg-gray-800'}"
-              onclick={() => selectCategory(category)}
-            >
-              {category.replace(/_/g, ' ')}
-            </button>
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    <!-- Story Types -->
-    <div class="mb-6">
-      <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-        Story Types
-      </h3>
-      <div class="space-y-1">
-        {#if $selectedFramework}
-          {#each $filteredStoryTypes as type}
-            <button
-              class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
-              class:bg-gray-700={$selectedStoryType === type}
-              class:text-white={$selectedStoryType === type}
-              class:text-gray-300={$selectedStoryType !== type}
-              class:hover:bg-gray-800={$selectedStoryType !== type}
-              onclick={() => selectType($selectedStoryType === type ? null : type)}
-            >
+        {/each}
+      {:else}
+        {#each $storyTypes as { type, count }}
+          <button
+            class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between {$selectedStoryType === type ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-800'}"
+            onclick={() => selectType($selectedStoryType === type ? null : type)}
+          >
+            <div class="flex items-center gap-2">
               <span
-                class="w-3 h-3 rounded-full flex-shrink-0"
+                class="w-2.5 h-2.5 rounded-full shrink-0"
                 style="background-color: {getStoryTypeColor(type)}"
               ></span>
               {formatStoryType(type)}
-            </button>
-          {/each}
-        {:else}
-          {#each $storyTypes as { type, count }}
-            <button
-              class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between"
-              class:bg-gray-700={$selectedStoryType === type}
-              class:text-white={$selectedStoryType === type}
-              class:text-gray-300={$selectedStoryType !== type}
-              class:hover:bg-gray-800={$selectedStoryType !== type}
-              onclick={() => selectType($selectedStoryType === type ? null : type)}
-            >
-              <div class="flex items-center gap-2">
-                <span
-                  class="w-3 h-3 rounded-full flex-shrink-0"
-                  style="background-color: {getStoryTypeColor(type)}"
-                ></span>
-                {formatStoryType(type)}
-              </div>
-              <span class="text-gray-500 text-xs">{count}</span>
-            </button>
-          {/each}
-        {/if}
-      </div>
+            </div>
+            <span class="text-slate-500 text-xs tabular-nums">{count}</span>
+          </button>
+        {/each}
+      {/if}
     </div>
+  </div>
   </div>
 </aside>

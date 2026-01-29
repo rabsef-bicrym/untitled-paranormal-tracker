@@ -31,28 +31,31 @@
       No stories found
     </div>
   {:else}
-    <div class="p-4 space-y-3">
+    <div class="p-2 sm:p-4 space-y-2 sm:space-y-3">
       {#each stories as story}
         <button
-          class="w-full text-left bg-[#1a1a2e] border border-gray-800 rounded-lg p-4 hover:border-purple-600/50 transition-colors"
+          class="w-full text-left bg-[#1a1a2e] border border-gray-800 rounded-lg p-3 sm:p-4 hover:border-purple-600/50 active:bg-slate-800 transition-colors"
           onclick={() => onStoryClick?.(story)}
         >
           <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">
               <h3 class="font-medium text-white truncate">{story.title}</h3>
 
-              <div class="flex items-center gap-3 mt-1 text-sm text-gray-400">
+              <div class="flex items-center gap-2 mt-1 text-sm text-gray-400 flex-wrap">
                 {#if story.story_type}
-                  <div class="flex items-center gap-1">
+                  <div class="flex items-center gap-1.5">
                     <span
-                      class="w-2 h-2 rounded-full"
+                      class="w-2 h-2 rounded-full flex-shrink-0"
                       style="background-color: {getStoryTypeColor(story.story_type)}"
                     ></span>
                     <span>{formatStoryType(story.story_type)}</span>
                   </div>
                 {/if}
+                {#if story.story_type && story.location}
+                  <span class="text-gray-600">·</span>
+                {/if}
                 {#if story.location}
-                  <span class="text-gray-500">{story.location}</span>
+                  <span class="text-gray-500 truncate">{story.location}</span>
                 {/if}
               </div>
 

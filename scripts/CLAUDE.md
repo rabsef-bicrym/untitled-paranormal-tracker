@@ -11,6 +11,7 @@ pip install -r requirements.txt
 # 2. Set environment variables (see .env.example)
 export ASSEMBLYAI_API_KEY=your_key
 export VOYAGE_API_KEY=your_key
+export ANTHROPIC_API_KEY=your_key
 
 # 3. Start database
 docker-compose up -d
@@ -213,6 +214,21 @@ first_person: true
 |----------|--------------|-------------|
 | `ASSEMBLYAI_API_KEY` | transcribe.py | AssemblyAI API key |
 | `VOYAGE_API_KEY` | load_segments.py, search.py | Voyage AI API key |
+| `ANTHROPIC_API_KEY` | load_segments.py | Anthropic API key for framework analysis |
+| `ANTHROPIC_MODEL` | load_segments.py | Optional Anthropic model override |
+
+### Framework Backfill
+
+```bash
+# Backfill only missing/outdated framework analysis
+python scripts/backfill_frameworks.py
+
+# Recompute frameworks for all stories
+python scripts/backfill_frameworks.py --all
+
+# Process specific story ID(s)
+python scripts/backfill_frameworks.py --id <uuid> --id <uuid>
+```
 | `DATABASE_URL` | load_segments.py, search.py | PostgreSQL URL (has default) |
 
 ---

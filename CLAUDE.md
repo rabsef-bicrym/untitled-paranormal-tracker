@@ -22,6 +22,7 @@ docker-compose up -d
 ```bash
 ASSEMBLYAI_API_KEY=xxx  # For transcription
 VOYAGE_API_KEY=xxx      # For embeddings
+ANTHROPIC_API_KEY=xxx   # For framework analysis
 ```
 
 ---

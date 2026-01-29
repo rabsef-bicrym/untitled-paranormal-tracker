@@ -1,15 +1,32 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import { browser } from '$app/environment';
   import * as THREE from 'three';
   import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+  import type { MapStory } from '$lib/api';
+  import MapClusterWindow from '$lib/components/MapClusterWindow.svelte';
+
+  interface Props {
+    stories?: MapStory[];
+    onStoryClick?: (story: MapStory) => void;
+  }
+
+  let { stories = [], onStoryClick }: Props = $props();
 
   // Globe settings
   const GLOBE_RADIUS = 50;
-  const HEX_HEIGHT = 0.3; // All hexes same height
+  const BASE_HEX_HEIGHT = 0.3;
   const HEX_RADIUS = 0.6;
+  const TOWER_HEIGHT_BASE = 2;
+  const TOWER_HEIGHT_SCALE = 4;
+  const FALLOFF_RADIUS = 5; // degrees
+  const FALLOFF_SHARPNESS = 2; // Higher = steeper falloff
 
-  // Color palette
-  const PALETTE = [
+  // Muted base land colors (dark like ocean)
+  const BASE_LAND_COLOR = new THREE.Color(0x1a1a2e);
+
+  // Vibrant tower palette (purple → pink → orange → yellow)
+  const TOWER_PALETTE = [
     new THREE.Color(0x1a0728),
     new THREE.Color(0x3b0a5a),
     new THREE.Color(0x7c3aed),
@@ -24,6 +41,34 @@
   let renderer: THREE.WebGLRenderer;
   let controls: OrbitControls;
   let animationId: number;
+  let raycaster: THREE.Raycaster | null = null;
+  const mouse = new THREE.Vector2();
+
+  // UI state
+  let hoveredTower: number | null = $state(null);
+  let activeCluster: { stories: MapStory[]; count: number; position: { x: number; y: number } } | null = $state(null);
+  let tooltip: { x: number; y: number; count: number } | null = $state(null);
+
+  // Camera starting position
+  const CAMERA_LAT = 43.0;
+  const CAMERA_LNG = -55.0;
+  const CAMERA_DISTANCE = 100;
+  const CAMERA_OFFSET_X = 70;
+  const CAMERA_OFFSET_Y = -140;
+
+  // Dynamic offset for panning
+  let currentOffsetX = $state(CAMERA_OFFSET_X);
+  let currentOffsetY = $state(CAMERA_OFFSET_Y);
+
+  // Story tower data
+  type StoryTower = {
+    lat: number;
+    lng: number;
+    count: number;
+    height: number;
+    stories: MapStory[];
+  };
+  let storyTowers: StoryTower[] = [];
 
   // Wave animation state
   const BERMUDA_LAT = 25.0;
@@ -45,6 +90,21 @@
     baseColor: THREE.Color;
   };
   let oceanHexes: OceanHex[] = [];
+
+  // Store land hexes for tower influence
+  type LandHex = {
+    mesh: THREE.Mesh;
+    material: THREE.MeshBasicMaterial;
+    lat: number;
+    lng: number;
+    baseY: number;
+    baseHeight: number;
+  };
+  let landHexes: LandHex[] = [];
+
+  // Store tower meshes for raycasting
+  let towerMeshes: THREE.Mesh[] = [];
+  let towerGroup: THREE.Group | null = null;
 
   let borderData: Uint8ClampedArray | null = null;
   let borderWidth = 0;
@@ -77,6 +137,90 @@
               Math.sin(dLng / 2) * Math.sin(dLng / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return c * 180 / Math.PI; // Return in degrees
+  }
+
+  // Cluster stories by proximity
+  function clusterStories(stories: MapStory[]): StoryTower[] {
+    if (!stories || stories.length === 0) return [];
+
+    const clusters: StoryTower[] = [];
+    const CLUSTER_RADIUS = 3; // degrees
+
+    for (const story of stories) {
+      // Find existing cluster within radius
+      let foundCluster = false;
+      for (const cluster of clusters) {
+        const dist = angularDistance(cluster.lat, cluster.lng, story.lat, story.lng);
+        if (dist < CLUSTER_RADIUS) {
+          cluster.stories.push(story);
+          cluster.count++;
+          // Update cluster center (weighted average)
+          cluster.lat = (cluster.lat * (cluster.count - 1) + story.lat) / cluster.count;
+          cluster.lng = (cluster.lng * (cluster.count - 1) + story.lng) / cluster.count;
+          foundCluster = true;
+          break;
+        }
+      }
+
+      // Create new cluster if no match
+      if (!foundCluster) {
+        clusters.push({
+          lat: story.lat,
+          lng: story.lng,
+          count: 1,
+          height: 0, // Will calculate after
+          stories: [story]
+        });
+      }
+    }
+
+    // Calculate tower heights
+    const maxCount = Math.max(...clusters.map(c => c.count), 1);
+    clusters.forEach(cluster => {
+      cluster.height = TOWER_HEIGHT_BASE + (cluster.count / maxCount) * TOWER_HEIGHT_SCALE;
+    });
+
+    return clusters;
+  }
+
+  // Get color from tower height (0 to max)
+  function colorFromTowerHeight(height: number, maxHeight: number): THREE.Color {
+    const normalized = Math.min(1, height / maxHeight);
+    const scaled = normalized * (TOWER_PALETTE.length - 1);
+    const idx = Math.floor(scaled);
+    const next = Math.min(idx + 1, TOWER_PALETTE.length - 1);
+    const t = scaled - idx;
+    return TOWER_PALETTE[idx].clone().lerp(TOWER_PALETTE[next], t);
+  }
+
+  // Calculate influence of nearest tower on a hex
+  function calculateTowerInfluence(hexLat: number, hexLng: number): { height: number; color: THREE.Color } | null {
+    if (storyTowers.length === 0) return null;
+
+    // Find nearest tower
+    let minDist = Infinity;
+    let nearestTower: StoryTower | null = null;
+
+    for (const tower of storyTowers) {
+      const dist = angularDistance(hexLat, hexLng, tower.lat, tower.lng);
+      if (dist < minDist) {
+        minDist = dist;
+        nearestTower = tower;
+      }
+    }
+
+    if (!nearestTower || minDist > FALLOFF_RADIUS) return null;
+
+    // Calculate falloff (0 at FALLOFF_RADIUS, 1 at tower center)
+    const falloff = Math.pow(1 - (minDist / FALLOFF_RADIUS), FALLOFF_SHARPNESS);
+
+    const maxTowerHeight = Math.max(...storyTowers.map(t => t.height));
+    const towerColor = colorFromTowerHeight(nearestTower.height, maxTowerHeight);
+
+    return {
+      height: nearestTower.height * falloff,
+      color: BASE_LAND_COLOR.clone().lerp(towerColor, falloff)
+    };
   }
 
   // Create hexagon geometry
@@ -205,22 +349,17 @@
     return r < 128; // Black = border
   }
 
-  // Get color based on latitude (just for variety)
-  function colorFromLatitude(lat: number): THREE.Color {
-    const normalized = (lat + 90) / 180; // 0 to 1
-    const scaled = normalized * (PALETTE.length - 1);
-    const idx = Math.floor(scaled);
-    const next = Math.min(idx + 1, PALETTE.length - 1);
-    const t = scaled - idx;
-    return PALETTE[idx].clone().lerp(PALETTE[next], t);
-  }
 
   // Build hexagonal globe with latitude compensation
   function buildHexGlobe() {
     if (!scene || !borderData || !landData) return;
 
+    // Cluster stories into towers (stories might be empty initially)
+    storyTowers = clusterStories(stories || []);
+
     const hexGroup = new THREE.Group();
-    oceanHexes = []; // Reset ocean hexes array
+    oceanHexes = [];
+    landHexes = [];
 
     // Target hex spacing at equator (in degrees)
     const targetSpacing = 1.7;
@@ -251,33 +390,49 @@
         const land = isLand(lat, lng);
         const onBorder = land && isOnBorder(lat, lng);
 
-        let geometry, material;
+        let geometry, material, hexHeight;
 
         if (onBorder) {
           // Border hex - lighter gray for visibility
-          geometry = createHexGeometry(HEX_RADIUS * 0.8, HEX_HEIGHT * 0.5);
+          hexHeight = BASE_HEX_HEIGHT * 0.5;
+          geometry = createHexGeometry(HEX_RADIUS * 0.8, hexHeight);
           material = new THREE.MeshBasicMaterial({
             color: BORDER_COLOR,
             transparent: true,
             opacity: 0.8
           });
         } else if (!land) {
-          // Ocean hex - deep neon blue
-          geometry = createHexGeometry(HEX_RADIUS * 0.8, HEX_HEIGHT);
+          // Ocean hex - dark blue
+          hexHeight = BASE_HEX_HEIGHT;
+          geometry = createHexGeometry(HEX_RADIUS * 0.8, hexHeight);
           material = new THREE.MeshBasicMaterial({
             color: OCEAN_COLOR.clone(),
             transparent: true,
             opacity: 0.9
           });
         } else {
-          // Land hex - colored by latitude
-          geometry = createHexGeometry(HEX_RADIUS * 0.8, HEX_HEIGHT);
-          const color = colorFromLatitude(lat);
-          material = new THREE.MeshBasicMaterial({
-            color,
-            transparent: true,
-            opacity: 0.9
-          });
+          // Land hex - check for tower influence
+          const influence = calculateTowerInfluence(lat, lng);
+
+          if (influence) {
+            // Near tower - apply falloff
+            hexHeight = BASE_HEX_HEIGHT + influence.height;
+            geometry = createHexGeometry(HEX_RADIUS * 0.8, hexHeight);
+            material = new THREE.MeshBasicMaterial({
+              color: influence.color,
+              transparent: true,
+              opacity: 0.9
+            });
+          } else {
+            // Base land - muted dark color
+            hexHeight = BASE_HEX_HEIGHT;
+            geometry = createHexGeometry(HEX_RADIUS * 0.8, hexHeight);
+            material = new THREE.MeshBasicMaterial({
+              color: BASE_LAND_COLOR,
+              transparent: true,
+              opacity: 0.9
+            });
+          }
         }
 
         const hex = new THREE.Mesh(geometry, material);
@@ -292,7 +447,7 @@
 
         hexGroup.add(hex);
 
-        // Store ocean hexes for wave animation
+        // Store hexes for animation/updates
         if (!land && !onBorder) {
           oceanHexes.push({
             mesh: hex,
@@ -302,11 +457,94 @@
             baseY: position.length(),
             baseColor: OCEAN_COLOR.clone()
           });
+        } else if (land && !onBorder) {
+          landHexes.push({
+            mesh: hex,
+            material: material as THREE.MeshBasicMaterial,
+            lat,
+            lng,
+            baseY: position.length(),
+            baseHeight: hexHeight
+          });
         }
       }
     }
 
     scene.add(hexGroup);
+
+    // Build story towers
+    buildStoryTowers();
+  }
+
+  // Build tall tower spikes at story locations
+  function buildStoryTowers() {
+    if (!scene) return;
+
+    // Remove existing towers
+    if (towerGroup) {
+      scene.remove(towerGroup);
+      towerGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          (child.material as THREE.Material).dispose();
+        }
+      });
+      towerGroup = null;
+    }
+    towerMeshes = [];
+
+    if (storyTowers.length === 0) return;
+
+    towerGroup = new THREE.Group();
+    const maxTowerHeight = Math.max(...storyTowers.map(t => t.height));
+
+    storyTowers.forEach((tower) => {
+      const geometry = createHexGeometry(HEX_RADIUS * 1.2, tower.height);
+      const color = colorFromTowerHeight(tower.height, maxTowerHeight);
+      const material = new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.95
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      const position = latLngToVector3(tower.lat, tower.lng, GLOBE_RADIUS);
+      mesh.position.copy(position);
+      mesh.lookAt(0, 0, 0);
+      mesh.rotateX(Math.PI);
+
+      towerGroup?.add(mesh);
+      towerMeshes.push(mesh);
+    });
+
+    scene.add(towerGroup);
+  }
+
+  // Update camera position
+  function updateCameraPosition() {
+    if (!camera || !container || !scene) return;
+    const viewPos = latLngToVector3(CAMERA_LAT, CAMERA_LNG, CAMERA_DISTANCE);
+    camera.position.copy(viewPos);
+    camera.lookAt(0, 0, 0);
+
+    applyViewOffset();
+  }
+
+  // Apply viewport offset to shift where globe appears on screen
+  function applyViewOffset() {
+    if (!camera || !container) return;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    if (currentOffsetX !== 0 || currentOffsetY !== 0) {
+      camera.setViewOffset(
+        width, height,
+        currentOffsetX, currentOffsetY,
+        width, height
+      );
+    } else {
+      camera.clearViewOffset();
+    }
+    camera.updateProjectionMatrix();
   }
 
   // Setup Three.js scene
@@ -322,7 +560,8 @@
       0.1,
       500
     );
-    camera.position.set(0, 0, 150);
+
+    updateCameraPosition();
     camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -336,7 +575,18 @@
     controls.minDistance = 80;
     controls.maxDistance = 250;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.5;
+    controls.autoRotateSpeed = 0.3; // Slower
+    controls.enablePan = false; // No built-in panning
+    controls.target.set(0, 0, 0); // Always orbit around globe center
+
+    // Keep right-click for custom panning via view offset
+    controls.mouseButtons = {
+      LEFT: THREE.MOUSE.ROTATE,
+      MIDDLE: THREE.MOUSE.DOLLY,
+      RIGHT: -1  // Disable OrbitControls right-click
+    };
+
+    raycaster = new THREE.Raycaster();
 
     const ambient = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambient);
@@ -344,11 +594,107 @@
     buildHexGlobe();
   }
 
+  // Mouse move handler for hover and panning
+  function handleMouseMove(event: MouseEvent) {
+    // Handle panning first
+    if (isPanning) {
+      handlePanMove(event);
+      return;
+    }
+
+    if (!raycaster || !camera || !container) return;
+
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    const hits = raycaster.intersectObjects(towerMeshes);
+    if (hits.length > 0) {
+      const towerIndex = towerMeshes.indexOf(hits[0].object as THREE.Mesh);
+      if (towerIndex !== -1) {
+        hoveredTower = towerIndex;
+        const tower = storyTowers[towerIndex];
+        tooltip = {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+          count: tower.count
+        };
+        container.style.cursor = 'pointer';
+        return;
+      }
+    }
+
+    hoveredTower = null;
+    tooltip = null;
+    container.style.cursor = 'grab';
+  }
+
+  // Mouse click handler
+  function handleClick(event: MouseEvent) {
+    if (hoveredTower === null) return;
+
+    const tower = storyTowers[hoveredTower];
+    activeCluster = {
+      stories: tower.stories,
+      count: tower.count,
+      position: { x: event.clientX + 16, y: event.clientY + 16 }
+    };
+  }
+
+  // Mouse leave handler
+  function handleMouseLeave() {
+    hoveredTower = null;
+    tooltip = null;
+    isPanning = false;
+    if (container) container.style.cursor = 'grab';
+  }
+
+  // Custom panning with right-click
+  let isPanning = false;
+  let panStartX = 0;
+  let panStartY = 0;
+  let panStartOffsetX = 0;
+  let panStartOffsetY = 0;
+
+  function handleMouseDown(event: MouseEvent) {
+    if (event.button === 2) { // Right-click
+      event.preventDefault();
+      isPanning = true;
+      panStartX = event.clientX;
+      panStartY = event.clientY;
+      panStartOffsetX = currentOffsetX;
+      panStartOffsetY = currentOffsetY;
+      if (container) container.style.cursor = 'move';
+    }
+  }
+
+  function handleMouseUp(event: MouseEvent) {
+    if (event.button === 2) {
+      isPanning = false;
+      if (container) container.style.cursor = 'grab';
+    }
+  }
+
+  function handlePanMove(event: MouseEvent) {
+    if (!isPanning) return;
+
+    const deltaX = event.clientX - panStartX;
+    const deltaY = event.clientY - panStartY;
+
+    currentOffsetX = panStartOffsetX - deltaX;
+    currentOffsetY = panStartOffsetY - deltaY;
+
+    applyViewOffset();
+  }
+
   function handleResize() {
     if (!camera || !renderer || !container) return;
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
+    updateCameraPosition(); // Reapply offset with new dimensions
   }
 
   function updateWave() {
@@ -418,9 +764,18 @@
   }
 
   onMount(async () => {
+    if (!browser) return;
+
     await loadBorders();
     setupScene();
     window.addEventListener('resize', handleResize);
+    window.addEventListener('mouseup', handleMouseUp); // Catch mouseup anywhere
+    window.addEventListener('mousemove', handlePanMove); // Track panning anywhere
+    container?.addEventListener('mousemove', handleMouseMove);
+    container?.addEventListener('mousedown', handleMouseDown);
+    container?.addEventListener('click', handleClick);
+    container?.addEventListener('mouseleave', handleMouseLeave);
+    container?.addEventListener('contextmenu', (e) => e.preventDefault()); // Prevent right-click menu
     // Trigger first wave after 5 seconds
     lastWaveTime = Date.now() - WAVE_INTERVAL + 5000;
     animate();
@@ -429,6 +784,12 @@
   onDestroy(() => {
     if (animationId) cancelAnimationFrame(animationId);
     window.removeEventListener('resize', handleResize);
+    window.removeEventListener('mouseup', handleMouseUp);
+    window.removeEventListener('mousemove', handlePanMove);
+    container?.removeEventListener('mousemove', handleMouseMove);
+    container?.removeEventListener('mousedown', handleMouseDown);
+    container?.removeEventListener('click', handleClick);
+    container?.removeEventListener('mouseleave', handleMouseLeave);
     controls?.dispose();
     renderer?.dispose();
     scene?.traverse((object) => {
@@ -443,6 +804,54 @@
       renderer.domElement.parentNode.removeChild(renderer.domElement);
     }
   });
+
+  // Rebuild towers when stories change (don't rebuild entire globe)
+  $effect(() => {
+    if (browser && scene) {
+      storyTowers = clusterStories(stories || []);
+      buildStoryTowers();
+
+      // Update land hex colors based on new tower positions
+      landHexes.forEach(({ mesh, material, lat, lng, baseY, baseHeight }) => {
+        const influence = calculateTowerInfluence(lat, lng);
+        if (influence) {
+          material.color.copy(influence.color);
+          const normal = mesh.position.clone().normalize();
+          mesh.position.copy(normal.multiplyScalar(baseY + influence.height));
+        } else {
+          material.color.copy(BASE_LAND_COLOR);
+          const normal = mesh.position.clone().normalize();
+          mesh.position.copy(normal.multiplyScalar(baseY + baseHeight));
+        }
+      });
+    }
+  });
 </script>
 
-<div class="relative w-full h-full overflow-hidden" bind:this={container}></div>
+{#if browser}
+<div class="relative w-full h-full overflow-hidden" bind:this={container}>
+  {#if tooltip}
+    <div
+      class="absolute z-20 px-3 py-2 bg-slate-950/90 backdrop-blur-md border border-cyan-400/30 rounded-lg shadow-[0_0_24px_rgba(56,189,248,0.25)] pointer-events-none"
+      style="left: {tooltip.x + 12}px; top: {tooltip.y + 12}px;"
+    >
+      <div class="font-semibold text-sm text-white">{tooltip.count} {tooltip.count === 1 ? 'story' : 'stories'}</div>
+      <div class="text-xs text-cyan-100 mt-1">Click to view</div>
+    </div>
+  {/if}
+
+  {#if activeCluster}
+    <MapClusterWindow
+      stories={activeCluster.stories}
+      count={activeCluster.count}
+      position={activeCluster.position}
+      onClose={() => activeCluster = null}
+      onOpenStory={onStoryClick}
+    />
+  {/if}
+</div>
+{:else}
+<div class="relative w-full h-full flex items-center justify-center bg-black">
+  <div class="text-cyan-200/70 text-xs uppercase tracking-[0.4em]">Loading globe...</div>
+</div>
+{/if}
