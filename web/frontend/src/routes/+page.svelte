@@ -9,12 +9,15 @@
     searchQuery,
     frameworks,
     storyTypes,
+    sidebarOpen,
   } from '$lib/stores';
   import RetroMap from '$lib/components/RetroMap.svelte';
   import VectorSpace from '$lib/components/VectorSpace.svelte';
   import FilterSidebar from '$lib/components/FilterSidebar.svelte';
   import StoryList from '$lib/components/StoryList.svelte';
   import StoryDetail from '$lib/components/StoryDetail.svelte';
+  import { gesture } from '$lib/utils/gestures';
+  import * as haptics from '$lib/utils/haptics';
 
   let mapStories: MapStory[] = $state([]);
   let vectorPoints: VectorPoint[] = $state([]);
@@ -129,14 +132,54 @@
         return 0;
     }
   }
+
+  // Swipe gesture handlers (mobile only)
+  function handleSwipeRight() {
+    // Open sidebar on mobile
+    if (window.innerWidth < 1024) {
+      sidebarOpen.set(true);
+      haptics.light();
+    }
+  }
+
+  function handleSwipeLeft() {
+    // Close sidebar or search panel
+    if (window.innerWidth < 1024) {
+      if ($sidebarOpen) {
+        sidebarOpen.set(false);
+        haptics.light();
+      } else if ($searchQuery.trim()) {
+        searchQuery.set('');
+        haptics.light();
+      }
+    }
+  }
+
+  function handleSwipeUp() {
+    // Cycle view mode forward: map → vector → list → map
+    if (window.innerWidth < 1024) {
+      const modes: Array<'map' | 'vector' | 'list'> = ['map', 'vector', 'list'];
+      const currentIndex = modes.indexOf($viewMode);
+      const nextIndex = (currentIndex + 1) % modes.length;
+      viewMode.set(modes[nextIndex]);
+      haptics.medium();
+    }
+  }
 </script>
 
 <div class="flex flex-col lg:flex-row h-full">
   <!-- Sidebar (drawer on mobile, fixed on desktop) -->
   <FilterSidebar storyCount={getDisplayCount()} />
 
-  <!-- Main content area -->
-  <div class="flex-1 relative overflow-hidden">
+  <!-- Main content area with gesture support -->
+  <div
+    class="flex-1 relative overflow-hidden"
+    use:gesture={{
+      onSwipeRight: handleSwipeRight,
+      onSwipeLeft: handleSwipeLeft,
+      onSwipeUp: handleSwipeUp,
+    }}
+  >
     {#if $viewMode === 'map'}
       <RetroMap stories={mapStories} onStoryClick={handleStoryClick} />
     {:else if $viewMode === 'vector'}

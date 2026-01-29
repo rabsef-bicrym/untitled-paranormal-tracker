@@ -168,3 +168,15 @@
 {"type":"status_update","timestamp":"2026-01-29T22:00:02.698021Z","issue_id":"upt-4c9","payload":{"status":"in_progress"}}
 {"type":"close","timestamp":"2026-01-29T22:00:14.138587Z","issue_id":"upt-4c9","payload":{}}
 {"type":"comment","timestamp":"2026-01-29T22:00:14.185354Z","issue_id":"upt-4c9","payload":{"body":"COMPLETE: Added dvh (dynamic viewport height) support to app.css. Added @supports fallback for older browsers (vh → dvh). Added utility classes for min-h-screen and max-h-screen with dvh. Mobile browser chrome no longer causes layout issues."}}
+{"type":"status_update","timestamp":"2026-01-29T22:19:28.435405Z","issue_id":"upt-fac","payload":{"status":"in_progress"}}
+{"type":"close","timestamp":"2026-01-29T22:20:01.639184Z","issue_id":"upt-fac","payload":{}}
+{"type":"comment","timestamp":"2026-01-29T22:20:01.68304Z","issue_id":"upt-fac","payload":{"body":"COMPLETE: Created gestures.ts utility with touch gesture detection. Detects swipe (left/right/up/down with velocity threshold \u003e0.5), pinch-to-zoom (scale + center point), long-press (500ms), double-tap (\u003c300ms between taps). Prevents default browser behaviors. Export createGestureHandler() and Svelte action gesture(). Returns cleanup function."}}
+{"type":"status_update","timestamp":"2026-01-29T22:20:05.165537Z","issue_id":"upt-9ea","payload":{"status":"in_progress"}}
+{"type":"close","timestamp":"2026-01-29T22:20:19.431961Z","issue_id":"upt-9ea","payload":{}}
+{"type":"comment","timestamp":"2026-01-29T22:20:19.482265Z","issue_id":"upt-9ea","payload":{"body":"COMPLETE: Created haptics.ts utility wrapping Web Vibration API with graceful fallback. Patterns: light() 10ms, medium() 20ms, success() [10,50,10], error() [20,100,20]. Also exports stop(), custom(pattern), and isVibrationSupported(). No errors on unsupported devices."}}
+{"type":"status_update","timestamp":"2026-01-29T22:20:23.148846Z","issue_id":"upt-332","payload":{"status":"in_progress"}}
+{"type":"close","timestamp":"2026-01-29T22:20:48.351452Z","issue_id":"upt-332","payload":{}}
+{"type":"comment","timestamp":"2026-01-29T22:20:48.39706Z","issue_id":"upt-332","payload":{"body":"COMPLETE: Created BottomSheet.svelte reusable component. Props: open (boolean), onClose (function), title (string), height (% default 80). Features: slide-up animation with spring physics, drag handle, touch drag to dismiss (100px threshold), backdrop overlay (tap to close), momentum scrolling, safe area insets. Uses gesture utility for swipe detection."}}
+{"type":"status_update","timestamp":"2026-01-29T22:20:52.011893Z","issue_id":"upt-626","payload":{"status":"in_progress"}}
+{"type":"close","timestamp":"2026-01-29T22:21:22.591201Z","issue_id":"upt-626","payload":{}}
+{"type":"comment","timestamp":"2026-01-29T22:21:22.637048Z","issue_id":"upt-626","payload":{"body":"COMPLETE: Implemented swipe navigation in +page.svelte. Added gesture handler to main content area. Swipe right: open sidebar (mobile only). Swipe left: close sidebar or clear search. Swipe up: cycle view mode (map→vector→list). Uses haptics for feedback (light for open/close, medium for mode switch). Mobile only (\u003c1024px)."}}
