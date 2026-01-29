@@ -6,9 +6,11 @@
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
   import type { VectorPoint } from '$lib/api';
-  import { formatStoryType, getStoryTypeColor } from '$lib/stores';
+  import { formatStoryType, getStoryTypeColor, performanceMode } from '$lib/stores';
   import { createGlowTexture, createNebulaTexture } from '$lib/three/textures';
   import * as haptics from '$lib/utils/haptics';
+  import { detectDevice } from '$lib/utils/device';
+  import { getOptimalSettings } from '$lib/utils/performance';
 
   interface Props {
     points: VectorPoint[];
@@ -183,13 +185,27 @@
 
     composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(container.clientWidth, container.clientHeight),
-      1.5,
-      0.4,
-      0.1
-    );
-    composer.addPass(bloomPass);
+
+    // Conditional bloom based on performance mode
+    const device = detectDevice();
+    const settings = getOptimalSettings(device);
+
+    // Check for query param override (dev mode)
+    const urlParams = new URLSearchParams(window.location.search);
+    const bloomOverride = urlParams.get('bloom');
+    const shouldBloom = bloomOverride !== null
+      ? bloomOverride === 'true'
+      : settings.bloomEnabled;
+
+    if (shouldBloom) {
+      const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(container.clientWidth, container.clientHeight),
+        2.0, // Increased strength
+        0.8, // Increased radius
+        0.3  // Increased threshold
+      );
+      composer.addPass(bloomPass);
+    }
 
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;

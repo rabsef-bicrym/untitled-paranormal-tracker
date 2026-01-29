@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { Story, SearchResult } from '$lib/api';
   import { getStoryTypeColor, formatStoryType } from '$lib/stores';
 
@@ -13,9 +14,35 @@
   function isSearchResult(story: Story | SearchResult): story is SearchResult {
     return 'score' in story;
   }
+
+  // Virtual scrolling state
+  const ITEM_HEIGHT = 120; // Approximate height of each story card
+  const BUFFER_SIZE = 5; // Extra items to render above and below viewport
+
+  let scrollContainer: HTMLDivElement;
+  let scrollTop = $state(0);
+  let containerHeight = $state(0);
+
+  // Calculate visible range
+  let visibleStart = $derived(Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - BUFFER_SIZE));
+  let visibleEnd = $derived(Math.min(
+    stories.length,
+    Math.ceil((scrollTop + containerHeight) / ITEM_HEIGHT) + BUFFER_SIZE
+  ));
+  let visibleStories = $derived(stories.slice(visibleStart, visibleEnd));
+
+  function handleScroll(e: Event) {
+    scrollTop = (e.target as HTMLDivElement).scrollTop;
+  }
+
+  onMount(() => {
+    if (scrollContainer) {
+      containerHeight = scrollContainer.clientHeight;
+    }
+  });
 </script>
 
-<div class="h-full overflow-y-auto">
+<div class="h-full overflow-y-auto" bind:this={scrollContainer} onscroll={handleScroll}>
   {#if loading}
     <div class="p-4 space-y-4">
       {#each Array(5) as _, i}
@@ -31,8 +58,13 @@
       No stories found
     </div>
   {:else}
-    <div class="p-2 sm:p-4 space-y-2 sm:space-y-3">
-      {#each stories as story}
+    <!-- Virtual scroll container with spacer -->
+    <div style="height: {stories.length * ITEM_HEIGHT}px; position: relative;">
+      <div
+        class="p-2 sm:p-4 space-y-2 sm:space-y-3"
+        style="position: absolute; top: {visibleStart * ITEM_HEIGHT}px; left: 0; right: 0;"
+      >
+        {#each visibleStories as story, index}
         <button
           class="w-full text-left bg-[#1a1a2e] border border-gray-800 rounded-lg p-3 sm:p-4 hover:border-purple-600/50 active:bg-slate-800 transition-colors"
           onclick={() => onStoryClick?.(story)}
@@ -90,6 +122,7 @@
           </div>
         </button>
       {/each}
+      </div>
     </div>
   {/if}
 </div>

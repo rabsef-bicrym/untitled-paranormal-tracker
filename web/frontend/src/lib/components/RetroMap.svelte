@@ -6,6 +6,7 @@
   import type { MapStory } from '$lib/api';
   import MapClusterWindow from '$lib/components/MapClusterWindow.svelte';
   import * as haptics from '$lib/utils/haptics';
+  import { getLODLevel } from '$lib/utils/performance';
 
   interface Props {
     stories?: MapStory[];
@@ -763,8 +764,52 @@
     }
   }
 
+  // LOD state
+  let currentLOD: 'high' | 'medium' | 'low' = 'high';
+
+  function updateLOD() {
+    if (!camera) return;
+
+    const distance = camera.position.length();
+    const lodLevel = getLODLevel(distance, {
+      lodDistance: [100, 300, 1000],
+      pixelRatio: 2,
+      antialias: true,
+      shadowMapEnabled: false,
+      bloomEnabled: false,
+      maxParticles: 0,
+      targetFPS: 60,
+      enableAutoRotate: true,
+      mode: 'high'
+    });
+
+    if (lodLevel === currentLOD) return;
+
+    currentLOD = lodLevel;
+
+    // Update hexagon visibility based on LOD
+    if (lodLevel === 'high') {
+      // Show all hexagons, full detail
+      oceanHexes.forEach(({ mesh }) => { mesh.visible = true; });
+      landHexes.forEach(({ mesh }) => { mesh.visible = true; });
+    } else if (lodLevel === 'medium') {
+      // Show every other hexagon, reduce density by ~50%
+      oceanHexes.forEach(({ mesh }, i) => { mesh.visible = i % 2 === 0; });
+      landHexes.forEach(({ mesh }, i) => { mesh.visible = i % 2 === 0; });
+
+      // Disable wave animation at medium LOD (performance)
+      waveActive = false;
+    } else {
+      // Low LOD: Show even fewer hexagons
+      oceanHexes.forEach(({ mesh }, i) => { mesh.visible = i % 3 === 0; });
+      landHexes.forEach(({ mesh }, i) => { mesh.visible = i % 3 === 0; });
+      waveActive = false;
+    }
+  }
+
   function animate() {
     animationId = requestAnimationFrame(animate);
+    updateLOD(); // Update LOD based on camera distance
     updateWave();
     controls?.update();
     renderer?.render(scene, camera);
