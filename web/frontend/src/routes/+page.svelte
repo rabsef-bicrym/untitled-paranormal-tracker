@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import { api, type MapStory, type VectorPoint, type Story, type SearchResult } from '$lib/api';
   import {
     viewMode,
@@ -11,13 +12,47 @@
     storyTypes,
     sidebarOpen,
   } from '$lib/stores';
-  import RetroMap from '$lib/components/RetroMap.svelte';
-  import VectorSpace from '$lib/components/VectorSpace.svelte';
   import FilterSidebar from '$lib/components/FilterSidebar.svelte';
   import StoryList from '$lib/components/StoryList.svelte';
   import StoryDetail from '$lib/components/StoryDetail.svelte';
   import { gesture } from '$lib/utils/gestures';
   import * as haptics from '$lib/utils/haptics';
+
+  // Lazy load Three.js visualizations
+  let RetroMapComponent: any = null;
+  let VectorSpaceComponent: any = null;
+
+  async function loadRetroMap() {
+    if (!RetroMapComponent) {
+      const module = await import('$lib/components/RetroMap.svelte');
+      RetroMapComponent = module.default;
+    }
+    return RetroMapComponent;
+  }
+
+  async function loadVectorSpace() {
+    if (!VectorSpaceComponent) {
+      const module = await import('$lib/components/VectorSpace.svelte');
+      VectorSpaceComponent = module.default;
+    }
+    return VectorSpaceComponent;
+  }
+
+  // Preload on idle (after initial load)
+  if (browser) {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        loadRetroMap();
+        loadVectorSpace();
+      });
+    } else {
+      // Fallback for browsers without requestIdleCallback
+      setTimeout(() => {
+        loadRetroMap();
+        loadVectorSpace();
+      }, 1000);
+    }
+  }
 
   let mapStories: MapStory[] = $state([]);
   let vectorPoints: VectorPoint[] = $state([]);
@@ -181,9 +216,21 @@
     }}
   >
     {#if $viewMode === 'map'}
-      <RetroMap stories={mapStories} onStoryClick={handleStoryClick} />
+      {#await loadRetroMap()}
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="text-white">Loading map...</div>
+        </div>
+      {:then RetroMap}
+        <RetroMap stories={mapStories} onStoryClick={handleStoryClick} />
+      {/await}
     {:else if $viewMode === 'vector'}
-      <VectorSpace points={vectorPoints} onPointClick={handleStoryClick} />
+      {#await loadVectorSpace()}
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="text-white">Loading vector space...</div>
+        </div>
+      {:then VectorSpace}
+        <VectorSpace points={vectorPoints} onPointClick={handleStoryClick} />
+      {/await}
     {:else if $viewMode === 'list'}
       <StoryList
         stories={$searchQuery.trim() ? searchResults : listStories}
