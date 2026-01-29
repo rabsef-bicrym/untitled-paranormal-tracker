@@ -25,6 +25,9 @@ export const isLoading = writable<boolean>(false);
 export const viewMode = writable<'map' | 'vector' | 'list'>('map');
 export const sidebarOpen = writable<boolean>(false);
 
+// Performance state
+export const performanceMode = writable<'high' | 'medium'>('high');
+
 // Derived stores
 export const frameworkCategories = derived(
   [frameworks, selectedFramework],
