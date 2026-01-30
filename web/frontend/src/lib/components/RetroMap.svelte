@@ -1058,6 +1058,7 @@
   // Rebuild towers when stories change (don't rebuild entire globe)
   $effect(() => {
     if (browser && scene) {
+      console.log('[RetroMap] Stories changed, rebuilding towers. Count:', stories?.length || 0);
       storyTowers = clusterStories(stories || []);
       buildStoryTowers();
 

@@ -73,6 +73,8 @@
       framework_category: $selectedFrameworkCategory || undefined,
     };
 
+    console.log('[+page] Loading data with params:', params);
+
     try {
       if ($searchQuery.trim()) {
         // Perform search
@@ -100,6 +102,8 @@
         listStories = list;
         searchResults = [];
       }
+
+      console.log('[+page] Loaded data. Map stories:', mapStories.length, 'Vector points:', vectorPoints.length);
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
