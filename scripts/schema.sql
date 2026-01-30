@@ -63,6 +63,12 @@ CREATE TABLE stories (
     umap_y FLOAT,
     umap_computed_at TIMESTAMPTZ,
 
+    -- Parapsychology framework analysis (LLM-generated, story-only)
+    frameworks_json JSONB,
+    frameworks_version TEXT,
+    frameworks_model TEXT,
+    frameworks_computed_at TIMESTAMPTZ,
+
     -- Full-text search (includes summary for text search, not semantic)
     search_vector tsvector GENERATED ALWAYS AS (
         setweight(to_tsvector('english', coalesce(title, '')), 'A') ||
