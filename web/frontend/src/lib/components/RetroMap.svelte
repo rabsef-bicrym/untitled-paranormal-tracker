@@ -1057,25 +1057,29 @@
 
   // Rebuild towers when stories change (don't rebuild entire globe)
   $effect(() => {
-    if (browser && scene) {
-      console.log('[RetroMap] Stories changed, rebuilding towers. Count:', stories?.length || 0);
-      storyTowers = clusterStories(stories || []);
-      buildStoryTowers();
+    // Access stories first to ensure dependency tracking
+    const currentStories = stories || [];
+    console.log('[RetroMap] Effect triggered. Stories count:', currentStories.length, 'Scene ready:', !!scene);
 
-      // Update land hex colors based on new tower positions
-      landHexes.forEach(({ mesh, material, lat, lng, baseY, baseHeight }) => {
-        const influence = calculateTowerInfluence(lat, lng);
-        if (influence) {
-          material.color.copy(influence.color);
-          const normal = mesh.position.clone().normalize();
-          mesh.position.copy(normal.multiplyScalar(baseY + influence.height));
-        } else {
-          material.color.copy(BASE_LAND_COLOR);
-          const normal = mesh.position.clone().normalize();
-          mesh.position.copy(normal.multiplyScalar(baseY + baseHeight));
-        }
-      });
-    }
+    if (!browser || !scene) return;
+
+    console.log('[RetroMap] Rebuilding towers...');
+    storyTowers = clusterStories(currentStories);
+    buildStoryTowers();
+
+    // Update land hex colors based on new tower positions
+    landHexes.forEach(({ mesh, material, lat, lng, baseY, baseHeight }) => {
+      const influence = calculateTowerInfluence(lat, lng);
+      if (influence) {
+        material.color.copy(influence.color);
+        const normal = mesh.position.clone().normalize();
+        mesh.position.copy(normal.multiplyScalar(baseY + influence.height));
+      } else {
+        material.color.copy(BASE_LAND_COLOR);
+        const normal = mesh.position.clone().normalize();
+        mesh.position.copy(normal.multiplyScalar(baseY + baseHeight));
+      }
+    });
   });
 </script>
 
